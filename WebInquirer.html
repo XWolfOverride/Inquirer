@@ -3,11 +3,29 @@
 <head>
     <title>inquirer Tester</title>
     <script src="inquirer.js"></script>
+    <script>
+        function showImage(w,h){
+            var rimg=document.getElementById("rimg");
+            rimg.style.width=w;
+            rimg.style.height=h;
+            rimg.style.display=w==0?"none":"";
+        }
+    </script>
+    <style>
+        #rimg{
+            border:5px solid black;
+        }
+    </style>
 </head>
-
 <body>
     <button onclick="1=1">Error</button><br/>
     <button onclick="inquirer.show()">Call Inquirer</button><br/>
+    <p>
+    <button onclick="showImage(320,240)">Small Reference Image</button><br/>
+    <button onclick="showImage(640,480)">Big Reference Image</button><br/>
+    <button onclick="showImage(0,0)">Hide Reference Image</button>
+    </p>
+    <img id="rimg" src="http://vignette2.wikia.nocookie.net/ipod/images/1/13/Macintosh_System_7.5.3_screenshot.png/revision/latest?cb=20100819232719" style="display:none">
 </body>
 
 </html>
