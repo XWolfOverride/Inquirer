@@ -1,18 +1,18 @@
 var inquirer = inquirer || new function () {
-    // Global Merge
-    if (!Object.prototype.merge)
-        Object.defineProperty(Object.prototype, "merge", {
-            writable: true, value: function (src) {
-                if (src != undefined)
-                    for (var key in src)
-                        this[key] = src[key];
-                return this;
-            }
-        });
 
     // Toolkit
     var jsTK = new function () {
         var icon = "R0lGODlhIAAgAKECADIyMjMzM////////yH5BAEKAAIALAAAAAAgACAAAAJulI8Zke2PFoC0LlZzW7qf633XGGHeiJqcaKWgsQov5JLvTNeYq+kM36vBUJNgaujDiVDIpLK58ylIiiU0NjWVZscHgAuUUXPOpfbhjD1bwmFIrHsvv+3Qrd4Byzda7N7h9zclmEOIFmgolgj4VgAAOw==";
+
+        if (!Object.prototype.merge)
+            Object.defineProperty(Object.prototype, "merge", {
+                writable: true, value: function (src) {
+                    if (src != undefined)
+                        for (var key in src)
+                            this[key] = src[key];
+                    return this;
+                }
+            });
 
         var ui = {
             w: {}
@@ -30,6 +30,7 @@ var inquirer = inquirer || new function () {
                     height: "100%",
                     fontFamily: "Verdana",
                     fontSize: "10px",
+                    overflow: "hidden",
                 });
                 ui.bg = document.createElement("div");
                 ui.bg.style.merge({
@@ -49,8 +50,8 @@ var inquirer = inquirer || new function () {
                     top: 0,
                     left: 0,
                     width: "100%",
-                    height: "19px",
-                    padding: "1px 5px 1px 5px",
+                    height: "21px",
+                    padding: "2px 9px 2px 9px",
                     backgroundColor: "white",
                     borderBottom: "1px solid black",
                     boxSizing: "border-box",
@@ -71,9 +72,10 @@ var inquirer = inquirer || new function () {
                 document.body.removeChild(ui.dsk);
         }
 
-        function control(id, def) {
-            var c = document.createElement("div");
-            c._id = id;
+        function control(id, def, c) {
+            if (!c)
+                c = document.createElement("div");
+            c.setAttribute("id", id);
             c.style.position = "absolute";
             c.setTop = function (val) {
                 def.top = val;
@@ -101,6 +103,7 @@ var inquirer = inquirer || new function () {
             c.setStyle = function (style) {
                 this.style.merge(style);
             }
+            var settings = {};
             for (var key in def) {
                 var mdata = def[key];
                 if (typeof mdata == "function")
@@ -109,8 +112,12 @@ var inquirer = inquirer || new function () {
                     var fname = "set" + key[0].toUpperCase() + key.substring(1);
                     var fnc = c[fname];
                     if (fnc && typeof fnc == "function")
-                        fnc.bind(c)(mdata);
+                        settings[key] = { f: fnc.bind(c), d: mdata };
                 }
+            }
+            for (var key in settings) {
+                var o = settings[key];
+                o.f(o.d);
             }
             return c;
         }
@@ -126,51 +133,62 @@ var inquirer = inquirer || new function () {
             // Window Title
             var wt = control("title", {
                 title: def.title,
+                visible: !def.hideTitle,
                 style: {
                     borderBottom: "1px solid black",
                     textAlign: "center",
-                    lineHeight: "16px",
+                    height: "18px",
                     boxSizing: "border-box",
                     fontFamily: "Chicago, Verdana",
                     fontSize: "12px",
                     fontWeight: "bold",
                     backgroundColor: "#F0F0F6",
                     position: "relative",
+                    boxShadow: "0 0 1px #A5A5D6 inset",
+                    paddingTop: "1px",
                 },
+                content: [
+                    control("closeButton", {
+                        visible: !def.hideCloseButton,
+                        style: {
+                            top: "2px",
+                            left: "6px",
+                            width: "10px",
+                            height: "10px",
+                            border: "2px groove #EFEFEF",
+                            backgroundColor: "#DFDFEF",
+                        },
+                        onclick: function () {
+                            w.close();
+                        }
+                    })//, document.createElement("button"))
+                ],
                 setTitle: function (title) {
-                    this.innterText = title;
+                    if (!this._textNode) {
+                        this._textNode = document.createTextNode("");
+                        this.appendChild(this._textNode);
+                    }
+                    this._textNode.textContent = title;
                 }
             });
-            wt.innerText = def.title;
-            if (!def.hideCloseButton) {
-                var wcb = document.createElement("button");
-                wcb.style.merge({
-                    position: "Absolute",
-                    top: "2px",
-                    left: "2px",
-                    width: "12px",
-                    height: "12px",
-                    border: "2px groove #EFEFEF",
-                    backgroundColor: "#DFDFEF",
-                });
-                wcb.onclick = function () {
-
-                };
-                wt.appendChild(wcb);
-            }
             // Window client
             var wc = control("client", {
                 content: def.content,
                 style: { position: "relative" }
             });
             def.content = [wt, wc];
-            // more
-            w = control(id, def);
-            w.style.merge({
-                backgroundColor: def.bg == undefined ? "white" : def.bg,
-                border: "1px solid black",
-                boxShadow: "1px 1px 0px rgba(0,0,0,0.5)",
-            });
+            // Window root
+            w = control(id, {
+                setTitle: function (title) {
+                    wt.setTitle(title);
+                },
+                style: {
+                    backgroundColor: def.bg == undefined ? "white" : def.bg,
+                    border: "1px solid black",
+                    boxShadow: "1px 1px 0px rgba(0,0,0,0.5)",
+                    overflow: "hidden",
+                }
+            }.merge(def));
             ui.dsk.appendChild(w);
             ui.w[id] = w;
             return w;
