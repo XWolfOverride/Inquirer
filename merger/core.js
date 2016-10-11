@@ -11,17 +11,21 @@ var merger = new function () {
             }
         });
 
+    // ---- UI implementation    
+    // ----------------------        
+
+    function mkTag(tag) {
+        return document.createElement(tag);
+    }
+
     var ui = {
+        app: {},
         w: {}
     };
 
-    this.ui = {
-
-    };
-
-    function desktop() {
+    function openDesktop() {
         if (!ui.dsk) {
-            ui.dsk = document.createElement("div");
+            ui.dsk = mkTag("div");
             ui.dsk.style.merge({
                 position: "absolute",
                 zIndex: 510,
@@ -33,7 +37,7 @@ var merger = new function () {
                 fontSize: "10px",
                 overflow: "hidden",
             });
-            ui.bg = document.createElement("div");
+            ui.bg = mkTag("div");
             ui.bg.style.merge({
                 backgroundColor: "gray",
                 opacity: 0.3,
@@ -44,7 +48,7 @@ var merger = new function () {
                 height: "100%",
             });
             ui.dsk.appendChild(ui.bg);
-            ui.menu = document.createElement("div");
+            ui.menu = mkTag("div");
             ui.menu.style.merge({
                 position: "absolute",
                 zIndex: 512,
@@ -60,18 +64,12 @@ var merger = new function () {
             ui.menu.sysMenu = document.createElement("img");
             ui.menu.sysMenu.style.width = "16px";
             ui.menu.sysMenu.style.height = "16px";
-            //ui.menu.sysMenu.src = "data:image/gif;base64," + jsTKicon;
             ui.menu.sysMenu.src = sysicon;
             ui.menu.appendChild(ui.menu.sysMenu);
             ui.dsk.appendChild(ui.menu);
         }
         if (!document.body.contains(ui.dsk))
             document.body.appendChild(ui.dsk);
-    }
-
-    function close() {
-        if (document.body.contains(ui.dsk))
-            document.body.removeChild(ui.dsk);
     }
 
     function control(id, def, c) {
@@ -218,6 +216,10 @@ var merger = new function () {
         return c;
     }
 
+    function button(id, def) {
+
+    }
+
     function list(id, def) {
         var c = control(id, def);
         c.style.border = "1px solid red";
@@ -228,11 +230,55 @@ var merger = new function () {
         return ui.w[id];
     }
 
-    this.desktop = desktop;
-    this.close = close;
-    this.window = window;
-    this.get = get;
-    this.list = list;
-    this.label = list;
-    this.button = list;
+    // ---- Kernel implementation    
+    // --------------------------
+
+    function app(id, def) {
+        if (ui.app[id])
+            throw new Error("Application '" + id + "' already exists");
+        var a = {}
+        ui.app[id] = a;
+        a.merge({
+            title: id,
+            window: undefined,
+            menu: undefined,
+            onload: function () {
+
+            },
+            show: function () {
+                openDesktop();
+                if (this.window)
+                    this.window.show();
+            },
+        });
+        a.merge(def);
+        return a;
+    }
+
+    function enter() {
+        openDesktop();
+    }
+
+
+    function leave() {
+        if (document.body.contains(ui.dsk))
+            document.body.removeChild(ui.dsk);
+    }
+
+    // -- Kernel
+    this.merge({
+        app: app,
+        enter: enter,
+        leave: leave,
+        // -- UI
+        ui: {
+            window: window,
+            get: get,
+            list: list,
+            label: label,
+            button: button,
+        }
+    });
 }
+
+merger.app("merger", {});

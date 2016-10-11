@@ -6,10 +6,21 @@ var inquirer = inquirer || new function () {
 
     var formerOnError;
     var inq = this;
+    var inqapp;
 
     // Methods
 
+    function getApp() {
+        if (!inqapp)
+            inqapp = merger.app("inquirer", {
+                title: "inquirer",
+
+            });
+        return inqapp;
+    }
+
     function show() {
+        getApp().show();
         jsTK.desktop();
         var w = jsTK.get("Werror");
         if (!w) {
