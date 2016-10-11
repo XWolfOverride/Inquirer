@@ -1,6 +1,6 @@
 var merger = new function () {
     var sysicon = "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=";
-
+    var sysver = "0.1b";
     if (!Object.prototype.merge)
         Object.defineProperty(Object.prototype, "merge", {
             writable: true, value: function (src) {
@@ -11,17 +11,26 @@ var merger = new function () {
             }
         });
 
+    var ui = {
+        app: {},
+        w: {}
+    };
+
+    function clockTick() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        if (h < 10) h = "0" + h;
+        if (m < 10) m = "0" + m;
+        ui.menu.time.innerText = h + ":" + m;
+    }
+
     // ---- UI implementation    
     // ----------------------        
 
     function mkTag(tag) {
         return document.createElement(tag);
     }
-
-    var ui = {
-        app: {},
-        w: {}
-    };
 
     function openDesktop() {
         if (!ui.dsk) {
@@ -61,12 +70,34 @@ var merger = new function () {
                 borderBottom: "1px solid black",
                 boxSizing: "border-box",
             });
-            ui.menu.sysMenu = document.createElement("img");
-            ui.menu.sysMenu.style.width = "16px";
-            ui.menu.sysMenu.style.height = "16px";
+            ui.menu.sysMenu = mkTag("img");
+            ui.menu.sysMenu.style.merge({
+                width: "16px",
+                height: "16px",
+                float: "left",
+            });
             ui.menu.sysMenu.src = sysicon;
+            ui.menu.client = mkTag("div");
+            ui.menu.client.style.merge({
+                float: "left",
+                fontFamily: "Arial",
+                fontSize: "14px",
+                lineHeight:"16px",
+            });
+            ui.menu.time = mkTag("div");
+            ui.menu.time.style.merge({
+                width: "40px",
+                float: "right",
+                fontFamily: "Arial",
+                fontSize: "14px",
+                lineHeight:"16px",
+            });
             ui.menu.appendChild(ui.menu.sysMenu);
+            ui.menu.appendChild(ui.menu.client);
+            ui.menu.appendChild(ui.menu.time);
             ui.dsk.appendChild(ui.menu);
+            clockTick();
+            setInterval(clockTick, 60000);
         }
         if (!document.body.contains(ui.dsk))
             document.body.appendChild(ui.dsk);
@@ -270,6 +301,7 @@ var merger = new function () {
         app: app,
         enter: enter,
         leave: leave,
+        version: sysver,
         // -- UI
         ui: {
             window: window,
@@ -281,4 +313,6 @@ var merger = new function () {
     });
 }
 
-merger.app("merger", {});
+merger.app("merger", {
+
+});
