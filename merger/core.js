@@ -1,6 +1,6 @@
 var merger = new function () {
     var sysicon = "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=";
-    var sysver = "0.1b";
+    var sysver = "0.1c";
     if (!Object.prototype.merge)
         Object.defineProperty(Object.prototype, "merge", {
             writable: true, value: function (src) {
@@ -25,6 +25,26 @@ var merger = new function () {
         ui.menu.time.innerText = h + ":" + m;
     }
 
+    // ---- Tools
+
+    function insist(ctrl) {
+        var controller = {
+            when: function () {
+                return true;
+            },
+            each: undefined,
+            do: function () {
+            }
+        }.merge(ctrl);
+        controller.check = function () {
+            if (!this.when())
+                setTimeout(this.check.bind(this), this.each);
+            else
+                this.do();
+        }
+        controller.check();
+    }
+
     // ---- UI implementation    
     // ----------------------        
 
@@ -32,20 +52,18 @@ var merger = new function () {
         return document.createElement(tag);
     }
 
+    function mkCSS(css) {
+        style = mkTag('style');
+        if (style.styleSheet)
+            style.styleSheet.cssText = css;
+        else
+            style.appendChild(document.createTextNode(css));
+        document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
     function openDesktop() {
-        if (!ui.dsk) {
-            ui.dsk = mkTag("div");
-            ui.dsk.style.merge({
-                position: "absolute",
-                zIndex: 510,
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                fontFamily: "Verdana",
-                fontSize: "10px",
-                overflow: "hidden",
-            });
+        if (!ui.dsk.merger_init) {
+            ui.dsk.merger_init = true;
             ui.bg = mkTag("div");
             ui.bg.style.merge({
                 backgroundColor: "gray",
@@ -82,7 +100,7 @@ var merger = new function () {
                 float: "left",
                 fontFamily: "Arial",
                 fontSize: "14px",
-                lineHeight:"16px",
+                lineHeight: "16px",
             });
             ui.menu.time = mkTag("div");
             ui.menu.time.style.merge({
@@ -90,7 +108,7 @@ var merger = new function () {
                 float: "right",
                 fontFamily: "Arial",
                 fontSize: "14px",
-                lineHeight:"16px",
+                lineHeight: "16px",
             });
             ui.menu.appendChild(ui.menu.sysMenu);
             ui.menu.appendChild(ui.menu.client);
@@ -99,16 +117,20 @@ var merger = new function () {
             clockTick();
             setInterval(clockTick, 60000);
         }
-        if (!document.body.contains(ui.dsk))
-            document.body.appendChild(ui.dsk);
+        ui.dsk.style="";
     }
 
     function control(id, def, c) {
-        if (!c)
-            c = document.createElement("div");
+        if (!c) {
+            c = mkTag("div");
+            c.style.display = "none";
+        }
         c.setAttribute("id", id);
         c.setAttribute("name", id);
         c.style.position = "absolute";
+        c.getId = function () {
+            return id;
+        }
         c.setTop = function (val) {
             def.top = val;
             this.style.top = val + "px";
@@ -127,6 +149,22 @@ var merger = new function () {
         }
         c.setVisible = function (val) {
             this.style.display = val ? "" : "none";
+            _visible = val;
+            if (val && this.onShow)
+                this.onShow();
+            if (val && this.onHide)
+                this.onHide();
+            if (this.onVisibilityChanged)
+                this.onVisibilityChanged();
+        }
+        c.getVisible = function () {
+            return this.style.display != "none";
+        }
+        c.show = function () {
+            this.setVisible(true);
+        }
+        c.hide = function () {
+            this.setVisible(false);
         }
         c.setContent = function (ctt) {
             for (var i = 0; i < ctt.length; i++)
@@ -147,6 +185,7 @@ var merger = new function () {
                     settings[key] = { f: fnc.bind(c), d: mdata };
             }
         }
+        // What hapens with value W/O setters?
         for (var key in settings) {
             var o = settings[key];
             o.f(o.d);
@@ -154,7 +193,19 @@ var merger = new function () {
         return c;
     }
 
+    function menuItem(id, def) {
+        var m = mkTag("div").merge({
+
+        });
+    }
+
     function window(id, def) {
+        if (typeof (def) != "object")
+            def = {};
+        if (def.height == undefined)
+            def.height = 300;
+        if (def.width == undefined)
+            def.width = 450;
         if (def.top == undefined)
             def.top = (ui.dsk.clientHeight - def.height) / 2;
         if (def.left == undefined)
@@ -264,25 +315,46 @@ var merger = new function () {
     // ---- Kernel implementation    
     // --------------------------
 
+    function kSwitchApp(app) {
+        ui.menu.sysMenu.src = app.icon ? app.icon : sysicon;
+    }
+
     function app(id, def) {
         if (ui.app[id])
             throw new Error("Application '" + id + "' already exists");
         var a = {}
         ui.app[id] = a;
         a.merge({
+            getId: function () {
+                return id;
+            },
             title: id,
-            window: undefined,
+            mainWindow: undefined,
+            window: {},
+            control: {},
             menu: undefined,
-            onload: function () {
+            onLoad: function () {
 
             },
             show: function () {
                 openDesktop();
-                if (this.window)
-                    this.window.show();
+                if (this.mainWindow)
+                    this.mainWindow.show();
             },
+            focus: function () {
+                this.show();
+                kSwitchApp(this);
+                if (this.mainWindow)
+                    this.mainWindow.focus();
+                if (this.onEnter)
+                    this.onEnter();
+            }
         });
         a.merge(def);
+        if (a.mainWindow)
+            a.window[a.mainWindow.getId()] = a.mainWindow;
+        if (a.onLoad)
+            a.onLoad();
         return a;
     }
 
@@ -311,6 +383,33 @@ var merger = new function () {
             button: button,
         }
     });
+
+    function kInit() {
+        ui.dsk = mkTag("div");
+        ui.dsk.style.merge({
+            position: "absolute",
+            zIndex: 510,
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            fontFamily: "Verdana",
+            fontSize: "10px",
+            overflow: "hidden",
+            display: "none",
+        });
+        insist({
+            when: function () {
+                return document.body;
+            },
+            do: function () {
+                document.body.appendChild(ui.dsk);
+            },
+            each: 100,
+        })
+    }
+
+    kInit();
 }
 
 merger.app("merger", {
