@@ -158,6 +158,7 @@ var merger = new function () {
         c.append = function (control) {
             this.appendChild(control);
             this.controls[control.getId()] = control;
+            control.parent = this;
         }
         c.setContent = function (ctt) {
             for (var i = 0; i < ctt.length; i++)
@@ -315,15 +316,14 @@ var merger = new function () {
     function app(id, def) {
         if (ui.app[id])
             throw new Error("Application '" + id + "' already exists");
-        var a = {}
+        var a = {}, windows = def.windows, i;
         ui.app[id] = a;
         a.merge({
             getId: function () {
                 return id;
             },
             title: id,
-            mainWindow: undefined,
-            window: {},
+            windows: {},
             menu: undefined,
             onLoad: function () {
 
@@ -342,9 +342,16 @@ var merger = new function () {
                     this.onEnter();
             }
         });
+        delete (def.windows);
         a.merge(def);
+        if (windows)
+            for (i = 0; i < windows.length; i++) {
+                var win = windows[i];
+                a.windows[win.getId()] = win;
+                win.parent = a;
+            }
         if (a.mainWindow)
-            a.window[a.mainWindow.getId()] = a.mainWindow;
+            a.mainWindow = a.windows[a.mainWindow];
         if (a.onLoad)
             a.onLoad();
         return a;

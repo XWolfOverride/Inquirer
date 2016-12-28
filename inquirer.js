@@ -14,14 +14,30 @@ var inquirer = inquirer || new function () {
         if (!inqapp)
             inqapp = merger.app("inquirer", {
                 title: "inquirer",
+                icon: icon,
+                windows: [merger.ui.window("Wmain", {
+                    title: "Error",
+                    width: 400,
+                    height: 250,
+                    content: [merger.ui.label("Lerror", {
+                        top: 10,
+                        left: 10,
+                        text: "---"
+                    })],
+                    onClose: function () {
+                        merger.leave();
+                    }
+                })],
+                mainWindow: "Wmain",
+                onLoad: function () {
 
+                }
             });
         return inqapp;
     }
 
     function show() {
-        getApp().show();
-        jsTK.desktop();
+        getApp().focus();
         var w = jsTK.get("Werror");
         if (!w) {
             w = jsTK.window("Werror", {
