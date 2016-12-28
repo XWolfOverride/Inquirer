@@ -1,6 +1,8 @@
 var merger = new function () {
-    var sysicon = "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=";
-    var sysver = "0.1c";
+    var sys = {
+        icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
+        ver: "0.1d",
+    };
     if (!Object.prototype.merge)
         Object.defineProperty(Object.prototype, "merge", {
             writable: true, value: function (src) {
@@ -64,18 +66,6 @@ var merger = new function () {
     function openDesktop() {
         if (!ui.dsk.merger_init) {
             ui.dsk.merger_init = true;
-            ui.bg = mkTag("div");
-            ui.bg.style.merge({
-                backgroundColor: "gray",
-                opacity: 0.3,
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-            });
-            ui.dsk.appendChild(ui.bg);
-            ui.menu = mkTag("div");
             ui.menu.style.merge({
                 position: "absolute",
                 zIndex: 512,
@@ -94,7 +84,7 @@ var merger = new function () {
                 height: "16px",
                 float: "left",
             });
-            ui.menu.sysMenu.src = sysicon;
+            ui.menu.sysMenu.src = sys.icon;
             ui.menu.client = mkTag("div");
             ui.menu.client.style.merge({
                 float: "left",
@@ -113,21 +103,20 @@ var merger = new function () {
             ui.menu.appendChild(ui.menu.sysMenu);
             ui.menu.appendChild(ui.menu.client);
             ui.menu.appendChild(ui.menu.time);
-            ui.dsk.appendChild(ui.menu);
             clockTick();
             setInterval(clockTick, 60000);
         }
-        ui.dsk.style="";
+        //ui.dsk.style.display = "";
+        document.body.appendChild(ui.dsk);
     }
 
     function control(id, def, c) {
-        if (!c) {
+        if (!c)
             c = mkTag("div");
-            c.style.display = "none";
-        }
         c.setAttribute("id", id);
         c.setAttribute("name", id);
         c.style.position = "absolute";
+        c.controls = {};
         c.getId = function () {
             return id;
         }
@@ -166,9 +155,13 @@ var merger = new function () {
         c.hide = function () {
             this.setVisible(false);
         }
+        c.append = function (control) {
+            this.appendChild(control);
+            this.controls[control.getId()] = control;
+        }
         c.setContent = function (ctt) {
             for (var i = 0; i < ctt.length; i++)
-                this.appendChild(ctt[i]);
+                this.append(ctt[i]);
         }
         c.setStyle = function (style) {
             this.style.merge(style);
@@ -207,9 +200,9 @@ var merger = new function () {
         if (def.width == undefined)
             def.width = 450;
         if (def.top == undefined)
-            def.top = (ui.dsk.clientHeight - def.height) / 2;
+            def.top = (document.body.clientHeight - def.height) / 2;
         if (def.left == undefined)
-            def.left = (ui.dsk.clientWidth - def.width) / 2;
+            def.left = (document.body.clientWidth - def.width) / 2;
         if (!def.content)
             def.content = [];
         var w;
@@ -277,7 +270,7 @@ var merger = new function () {
                 if (this.onClose)
                     close = this.onClose();
                 if (close)
-                    this.setVisible(false);
+                    this.hide();
             }
         }.merge(def));
         ui.dsk.appendChild(w);
@@ -316,7 +309,7 @@ var merger = new function () {
     // --------------------------
 
     function kSwitchApp(app) {
-        ui.menu.sysMenu.src = app.icon ? app.icon : sysicon;
+        ui.menu.sysMenu.src = app.icon ? app.icon : sys.icon;
     }
 
     function app(id, def) {
@@ -331,7 +324,6 @@ var merger = new function () {
             title: id,
             mainWindow: undefined,
             window: {},
-            control: {},
             menu: undefined,
             onLoad: function () {
 
@@ -373,7 +365,7 @@ var merger = new function () {
         app: app,
         enter: enter,
         leave: leave,
-        version: sysver,
+        version: sys.ver,
         // -- UI
         ui: {
             window: window,
@@ -396,17 +388,12 @@ var merger = new function () {
             fontFamily: "Verdana",
             fontSize: "10px",
             overflow: "hidden",
-            display: "none",
+            //display: "none",
+            backgroundColor: "rgba(128,128,128,0.3)",
         });
-        insist({
-            when: function () {
-                return document.body;
-            },
-            do: function () {
-                document.body.appendChild(ui.dsk);
-            },
-            each: 100,
-        })
+        ui.menu = mkTag("div");
+        ui.dsk.appendChild(ui.menu);
+
     }
 
     kInit();
