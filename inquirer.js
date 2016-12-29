@@ -23,13 +23,42 @@ var inquirer = inquirer || new function () {
                         top: 10,
                         left: 10,
                         text: "---"
-                    })],
+                    }),
+                    merger.ui.button("Bok", {
+                        top: 200,
+                        left: 355,
+                        text: "Ok",
+                        onClick: function (e) {
+                            this.getWindow().close();
+                        }
+                    }),
+                    merger.ui.textbox("Tinfo", {
+                        top: 25,
+                        left: 10,
+                        width: 340,
+                        height: 190,
+                        multiple: true,
+                        style: {
+                            whiteSpace: "pre",
+                        }
+                    })
+                    ],
                     onClose: function () {
                         merger.leave();
+                    },
+                    setError: function (message, data) {
+                        this.client.Lerror.setText(message);
+                        this.client.Tinfo.setText(JSON.stringify(data, null, 2));
                     }
                 })],
                 mainWindow: "Wmain",
                 onLoad: function () {
+
+                },
+                showError: function (message, data) {
+                    this.windows.Wmain.setError(message, data);
+                },
+                log: function (info) {
 
                 }
             });
@@ -38,36 +67,10 @@ var inquirer = inquirer || new function () {
 
     function show() {
         getApp().focus();
-        var w = jsTK.get("Werror");
-        if (!w) {
-            w = jsTK.window("Werror", {
-                title: "Error",
-                width: 400,
-                height: 200,
-                content: [jsTK.label("Lerror", {
-                    top: 30,
-                    left: 10,
-                    text: "---"
-                }), jsTK.list("Lerrors", {
-                    top: 80,
-                    left: 10,
-                    width: 320,
-                    height: 100,
-                }), jsTK.button("Bok", {
-                    top: 80,
-                    left: 10,
-                    width: 320,
-                    height: 100,
-                    text: "Ok",
-                    onClick: function () {
-                    }
-                })]
-            });
-        }
     }
 
     function hide() {
-        jsTK.close();
+        getApp().windows.Wmain.close();
     }
 
     function hook() {
@@ -101,8 +104,11 @@ var inquirer = inquirer || new function () {
     }
 
     function error(message, data) {
-        if (this.autoShow)
+        getApp().log({ error: true, data: { message: message, data: data } });
+        if (this.autoShow) {
+            getApp().showError(message, data);
             show();
+        }
     }
 
     function inspect() {
