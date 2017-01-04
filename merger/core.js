@@ -14,9 +14,10 @@ var merger = new function () {
     if (!Object.prototype.merge)
         Object.defineProperty(Object.prototype, "merge", {
             writable: true, value: function (src) {
-                if (src != undefined)
-                    for (var key in src)
-                        this[key] = src[key];
+                if (!src)
+                    return this;
+                for (var key in src)
+                    this[key] = src[key];
                 return this;
             }
         });
@@ -66,6 +67,15 @@ var merger = new function () {
                 this.do();
         }
         controller.check();
+    }
+
+    /**
+     * Function to merge control definition preserving style
+     */
+    function mkDefinition(a, b) {
+        if (a.style)
+            b.style = a.style.merge(b.style);
+        return a.merge(b);
     }
 
     // ---- UI implementation    
@@ -210,23 +220,31 @@ var merger = new function () {
         c.getApp = function () {
             return this.getWindow().parent;
         }
-        var settings = {};
-        for (var key in def) {
-            var mdata = def[key];
-            if (typeof mdata == "function")
-                c[key] = def[key];
-            else {
-                var fname = "set" + key[0].toUpperCase() + key.substring(1);
-                var fnc = c[fname];
-                if (fnc && typeof fnc == "function")
-                    settings[key] = { f: fnc.bind(c), d: mdata };
+        c.merge = function (src) {
+            var settings = {};
+            for (var key in def) {
+                var mdata = def[key];
+                if (typeof mdata == "function")
+                    c[key] = def[key];
+                else {
+                    var fname = "set" + key[0].toUpperCase() + key.substring(1);
+                    var fnc = c[fname];
+                    settings[key] = {
+                        f: (fnc && typeof fnc == "function") ? fnc.bind(this) : null, d: mdata
+                    };
+                }
+                for (var key in settings) {
+                    var o = settings[key];
+                    if (o.f)
+                        o.f(o.d);
+                    else
+                        this[key] = o.d;
+                }
             }
         }
-        // What hapens with value W/O setters?
-        for (var key in settings) {
-            var o = settings[key];
-            o.f(o.d);
-        }
+        c.merge({
+            anchor: { top: true, right: false, bottom: false, left: true },
+        }.merge(def));
         if (c.onControlCreate)
             c.onControlCreate();
         return c;
@@ -257,39 +275,48 @@ var merger = new function () {
             def.left = (document.body.clientWidth - def.width) / 2;
         if (!def.content)
             def.content = [];
-        var w;
+        var w, dw = def.width, dh = def.height;
+        delete (def.width);
+        delete (def.height);
+        if (dw == undefined)
+            dw = 300;
+        if (dh == undefined)
+            dh = 200;
         // Window Title
         var wt = control("windowtitle", "windowtitle", {
             visible: !def.hideTitle,
             style: {
-                borderBottom: "1px solid black",
-                textAlign: "center",
-                height: "18px",
+                textAlign: "right",
+                height: "20px",
                 boxSizing: "border-box",
                 fontFamily: "Chicago, Verdana",
-                fontSize: "12px",
-                fontWeight: "bold",
-                backgroundColor: "#F0F0F6",
+                fontSize: "13px",
+                lineHeight: "20px",
                 position: "relative",
-                boxShadow: "0 0 1px #A5A5D6 inset",
-                paddingTop: "1px",
+                paddingRight: "7px",
             },
             content: [
                 control("windowclosebutton", "closeButton", {
                     visible: !def.hideCloseButton,
                     style: {
-                        top: "2px",
-                        left: "6px",
-                        width: "9px",
-                        height: "9px",
-                        border: "2px groove #EFEFEF",
-                        backgroundColor: "#DFDFEF",
+                        top: "0",
+                        left: "0",
+                        width: "25px",
+                        height: "20px",
+                        lineHeight: "20px",
+                        border: "0",
+                        backgroundColor: "teal",
                         padding: 0,
                         boxSizing: "content-box",
+                        color: "white",
+                    },
+                    setText: function (text) {
+                        this.innerText = text;
                     },
                     onclick: function () {
                         w.close();
                     },
+                    text: "X",
                 }, document.createElement("button"))
             ],
             setTitle: function (title) {
@@ -303,18 +330,22 @@ var merger = new function () {
         // Window client
         var wc = control("windowclient", "client", {
             content: def.content,
-            style: { position: "relative" }
+            style: { position: "relative", margin:"5px" },
+            width: dw,
+            height: dh,
         });
         def.content = [wt, wc];
         // Window root
         w = control("window", id, {
+            width: dw + 10,
+            height: dh + 30,
             setTitle: function (title) {
                 wt.setTitle(title);
             },
             style: {
                 backgroundColor: def.bg == undefined ? "white" : def.bg,
-                border: "1px solid black",
-                boxShadow: "1px 1px 0px rgba(0,0,0,0.5)",
+                border: "1px solid teal",
+                boxShadow: "0px 0px 3px rgba(0,0,0,0.5)",
                 overflow: "hidden",
             },
             close: function () {
@@ -323,7 +354,7 @@ var merger = new function () {
                     close = this.onClose();
                 if (close)
                     this.hide();
-            }
+            },
         }.merge(def));
         ui.dsk.appendChild(w);
         ui.w[id] = w;
@@ -334,18 +365,23 @@ var merger = new function () {
      * Picture control creation
      */
     function picture(id, def) {
-
+        var c = control("picture", id, mkDefinition({
+            setSrc: function (src) {
+                this.src = src;
+            }
+        }, def), mkTag("img"));
+        return c;
     }
 
     /**
      * Label control creation
      */
     function label(id, def) {
-        var c = control("label", id, {
+        var c = control("label", id, mkDefinition({
             setText: function (text) {
                 this.innerText = text;
             }
-        }.merge(def));
+        }, def));
         if (def.text !== undefined)
             c.setText(def.text);
         return c;
@@ -355,15 +391,15 @@ var merger = new function () {
      * TextBox control creation
      */
     function textbox(id, def) {
-        def.style = {
-            fontSize: "10px",
-            fontFamily: "Lucida Console, Monospace"
-        }.merge(def.style);
-        var c = control("textbox", id, {
+        var c = control("textbox", id, mkDefinition({
             setText: function (value) {
                 this.value = value;
+            },
+            style: {
+                fontSize: "10px",
+                border: "1px solid teal",
             }
-        }.merge(def), mkTag(def.multiple ? "textarea" : "input"));
+        }, def), mkTag(def.multiple ? "textarea" : "input"));
         return c;
     }
 
@@ -371,10 +407,18 @@ var merger = new function () {
      * Button control creation
      */
     function button(id, def) {
-        var c = control("button", id, def, mkTag("button"));
-        c.setText = function (text) {
-            this.innerText = text;
-        }
+        var c = control("button", id, mkDefinition({
+            setText: function (text) {
+                this.innerText = text;
+            },
+            style: {
+                border: "0",
+                borderRadius: "7px",
+                background: "teal",
+                color: "white",
+                height: "20px",
+            },
+        }, def), mkTag("button"));
         c.setText(def.text);
         c.addEventListener("click", function () { if (this.onClick) this.onClick.apply(this, arguments) }, false);
         return c;
@@ -478,6 +522,7 @@ var merger = new function () {
             label: label,
             textbox: textbox,
             button: button,
+            picture: picture,
         }
     });
 
