@@ -38,7 +38,7 @@ var inquirer = inquirer || new function () {
                     merger.ui.label("Tinfo", {
                         top: 37,
                         left: -5,
-                        width: 410,
+                        width: 400,
                         height: 250 - 37 - 25 - 10,
                         multiple: true,
                         style: {
@@ -65,8 +65,8 @@ var inquirer = inquirer || new function () {
                         merger.leave();
                     },
                     setError: function (message, data) {
-                        this.client.Lerror.setText(message);
-                        this.client.Tinfo.setText(JSON.stringify(data, null, 2));
+                        this.content.Lerror.setText(message);
+                        this.content.Tinfo.setText(JSON.stringify(data, null, 2));
                     }
                 })],
                 mainWindow: "Wmain",

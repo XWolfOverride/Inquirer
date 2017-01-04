@@ -69,17 +69,8 @@ var merger = new function () {
         controller.check();
     }
 
-    /**
-     * Function to merge control definition preserving style
-     */
-    function mkDefinition(a, b) {
-        if (a.style)
-            b.style = a.style.merge(b.style);
-        return a.merge(b);
-    }
-
     // ---- UI implementation    
-    // ----------------------        
+    // ----------------------
 
     /**
      * Tool for creating tags
@@ -101,12 +92,58 @@ var merger = new function () {
     }
 
     /**
+     * Function to merge control definition preserving style
+     */
+    function mkDefinition(a, b) {
+        if (a.style)
+            b.style = a.style.merge(b.style);
+        return a.merge(b);
+    }
+
+    /**
+     * Drag'N'Drop system
+     */
+
+    var DragNDrop = new (function () {
+        var item, point;
+
+        this.merge({
+            drag: function (i, x, y) {
+                if (item)
+                    this.drop();
+                item = i;
+                point = { x: x, y: y };
+            },
+            drop: function (ctl) {
+                if (!ctl)
+                    item = null;
+                else
+                    if (item == ctl)
+                        item = null;
+            },
+            dragging: function () {
+                return item ? true : false;
+            },
+            update: function (x, y) {
+                item.merge({
+                    top: y - point.y,
+                    left: x - point.x,
+                })
+            }
+        });
+    })();
+
+    /**
      * Open merger desktop.
      * The first time finish the basic layout creation
      */
     function openDesktop() {
         if (!ui.dsk.merger_init) {
             ui.dsk.merger_init = true;
+            ui.dsk.onmousemove = function (e) {
+                if (DragNDrop.dragging())
+                    DragNDrop.update(e.clientX, e.clientY);
+            }
             ui.menu.style.merge({
                 position: "absolute",
                 zIndex: 512,
@@ -144,6 +181,9 @@ var merger = new function () {
             ui.menu.appendChild(ui.menu.sysMenu);
             ui.menu.appendChild(ui.menu.client);
             ui.menu.appendChild(ui.menu.time);
+            ui.menu.style.merge({
+                userSelect: "none",
+            })
             clockTick();
             setInterval(clockTick, 60000);
         }
@@ -161,6 +201,7 @@ var merger = new function () {
         c.setAttribute("name", id);
         c.style.position = "absolute";
         c._type = type;
+        c.content = {};
         c.getId = function () {
             return id;
         }
@@ -201,8 +242,8 @@ var merger = new function () {
         }
         c.append = function (control) {
             this.appendChild(control);
-            this[control.getId()] = control;
-            control.parent = this;
+            this.content[control.getId()] = control;
+            control.parentControl = this;
         }
         c.setContent = function (ctt) {
             for (var i = 0; i < ctt.length; i++)
@@ -214,13 +255,13 @@ var merger = new function () {
         c.getWindow = function () {
             var win = this;
             while (win && win._type != "window")
-                win = win.parent;
+                win = win.parentControl;
             return win;
         }
         c.getApp = function () {
             return this.getWindow().parent;
         }
-        c.merge = function (src) {
+        c.merge = function (def) {
             var settings = {};
             for (var key in def) {
                 var mdata = def[key];
@@ -283,7 +324,7 @@ var merger = new function () {
         if (dh == undefined)
             dh = 200;
         // Window Title
-        var wt = control("windowtitle", "windowtitle", {
+        var wt = control("titlebar", "windowtitle", {
             visible: !def.hideTitle,
             style: {
                 textAlign: "right",
@@ -294,6 +335,7 @@ var merger = new function () {
                 lineHeight: "20px",
                 position: "relative",
                 paddingRight: "7px",
+                userSelect: "none",
             },
             content: [
                 control("windowclosebutton", "closeButton", {
@@ -325,25 +367,37 @@ var merger = new function () {
                     this.appendChild(this._textNode);
                 }
                 this._textNode.textContent = title;
+            },
+            onmousedown: function (e) {
+                DragNDrop.drag(this.parentControl, e.offsetX, e.offsetY);
+            },
+            onmouseup: function (e) {
+                DragNDrop.drop(this.parentControl);
             }
         });
         // Window client
         var wc = control("windowclient", "client", {
             content: def.content,
-            style: { position: "relative", margin:"5px" },
+            style: { position: "relative", margin: "5px" },
             width: dw,
             height: dh,
         });
         def.content = [wt, wc];
         // Window root
-        w = control("window", id, {
+        w = control("window", id, mkDefinition({
             width: dw + 10,
             height: dh + 30,
             setTitle: function (title) {
                 wt.setTitle(title);
             },
+            setTop: function (val) {
+                if (val < 20)
+                    val = 20;
+                def.top = val;
+                this.style.top = val + "px";
+            },
             style: {
-                backgroundColor: def.bg == undefined ? "white" : def.bg,
+                backgroundColor: "white",
                 border: "1px solid teal",
                 boxShadow: "0px 0px 3px rgba(0,0,0,0.5)",
                 overflow: "hidden",
@@ -355,9 +409,12 @@ var merger = new function () {
                 if (close)
                     this.hide();
             },
-        }.merge(def));
+        }, def));
         ui.dsk.appendChild(w);
         ui.w[id] = w;
+        w.client = w.content.client;
+        w.titlebar = w.content.titlebar;
+        w.content = w.client.content;
         return w;
     }
 
