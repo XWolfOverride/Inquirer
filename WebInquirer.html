@@ -6,15 +6,35 @@
     <script src="merger/core.js"></script>
     <script src="inquirer.js"></script>
     <script>
-        function showImage(w, h) {
-            var rimg = document.getElementById("rimg");
-            rimg.style.width = w;
-            rimg.style.height = h;
-            rimg.style.display = w == 0 ? "none" : "";
-        }
         var testData = { "cyclesize": 1, "id": 3, "instructions": "1. Trim nails according to the guidelines.\r\n2. Check client’s nail beds for any infection, swelling or discoloration.", "location": null, "name": "Nail Care - To assist client in nails cutting.", "partnerdet": "I", "repetitiontype": "W", "resulttypes": [{ "category": 1, "id": 2, "mandatory": true, "name": "Done or Skipped", "options": [{ "icon": 2, "id": 8, "mustvalidate": true, "name": "Done" }, { "icon": 2, "id": 9, "mustvalidate": false, "name": "Skipped - client refuse" }, { "icon": null, "id": 10, "mustvalidate": false, "name": "Skipped - not feeling well" }, { "icon": 3, "id": 11, "mustvalidate": false, "name": "Skipped - other (please enter Remarks)" }, { "icon": 7, "id": 12, "mustvalidate": false, "name": "Skipped - forgot" }, { "icon": 6, "id": 13, "mustvalidate": false, "name": "Skipped - insufficient time" }], "readdefaultunit": null, "taskresulttype": "S" }, { "category": 1, "id": 3, "mandatory": false, "name": "Mood Observation", "options": [{ "icon": 9, "id": 14, "mustvalidate": false, "name": "Happy" }, { "icon": 10, "id": 15, "mustvalidate": false, "name": "Sad" }, { "icon": 18, "id": 16, "mustvalidate": false, "name": "Pain" }, { "icon": 12, "id": 17, "mustvalidate": false, "name": "Anger" }, { "icon": 11, "id": 18, "mustvalidate": false, "name": "In Tears" }, { "icon": 13, "id": 19, "mustvalidate": false, "name": "Confused" }, { "icon": 14, "id": 20, "mustvalidate": false, "name": "Anxious" }, { "icon": 17, "id": 21, "mustvalidate": false, "name": "Suicidal" }, { "icon": 15, "id": 22, "mustvalidate": false, "name": "Depressed" }, { "icon": 19, "id": 24, "mustvalidate": false, "name": "Emotionless" }], "readdefaultunit": null, "taskresulttype": "M" }, { "category": 0, "id": 5, "mandatory": false, "name": "Nail Observation", "options": [{ "icon": null, "id": 27, "mustvalidate": false, "name": "Infection" }, { "icon": null, "id": 28, "mustvalidate": false, "name": "Discoloration" }, { "icon": null, "id": 29, "mustvalidate": false, "name": "Swelling" }], "readdefaultunit": null, "taskresulttype": "M" }], "tasktype": "H", "text": "", "timespercycle": 1 };
+        var refim = [{
+            i: "http://vignette2.wikia.nocookie.net/ipod/images/1/13/Macintosh_System_7.5.3_screenshot.png/revision/latest?cb=20100819232719",
+            w: 640,
+            h: 480,
+        }, {
+            i: "http://www.itwriting.com/blog/wp-content/uploads/2015/05/image4.png",
+            w: 1024,
+            h: 576,
+        }
+        ], isiz, isel;
+        function showImage(z, i) {
+            if (i !== undefined) {
+                isel = i;
+                if (z === undefined)
+                    z = 1;
+            }
+            if (z !== undefined)
+                isiz = z;
+            if (isel === undefined)
+                isel = 0;
+            var rimg = document.getElementById("rimg"), ri = refim[isel];
+            rimg.src = ri.i;
+            rimg.style.width = ri.w * isiz;
+            rimg.style.height = ri.h * isiz;
+            rimg.style.display = isiz === 0 ? "none" : "";
+        }
     </script>
-    <style>
+<style>
         #rimg{
             border:5px solid black;
         }
@@ -26,12 +46,13 @@
 <button onclick="inquirer.show()">Call Inquirer</button><br/>
 <button onclick="inquirer.inspect(testData)">Inspector</button><br/>
 <p>
-    <button onclick="showImage(320,240)">Small Reference Image</button><br/>
-<button onclick="showImage(640,480)">Big Reference Image</button><br/>
-<button onclick="showImage(0,0)">Hide Reference Image</button>
+    <button onclick="showImage(undefined,0)">Show Macos 7</button><br/>
+<button onclick="showImage(undefined,1)">Windows 10</button><br/>
+<button onclick="showImage(0.5)">Small Reference Image</button><br/>
+<button onclick="showImage(1)">Big Reference Image</button><br/>
+<button onclick="showImage(0)">Hide Reference Image</button>
 </p>
-<img id="rimg" src="http://vignette2.wikia.nocookie.net/ipod/images/1/13/Macintosh_System_7.5.3_screenshot.png/revision/latest?cb=20100819232719"
-    style="display:none">
+<img id="rimg" src="" style="display:none">
 </body>
 
 </html>
