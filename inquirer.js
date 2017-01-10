@@ -17,6 +17,11 @@ var inquirer = inquirer || new function () {
             inqapp = merger.app("inquirer", {
                 title: "inquirer",
                 icon: icon,
+                menu: [
+                    merger.ui.menuItem("test", {
+text:"perico",
+                    })
+                ],
                 windows: [merger.ui.window("Wmain", {
                     title: "Error",
                     width: 400,
@@ -47,7 +52,7 @@ var inquirer = inquirer || new function () {
                             border: "0",
                             overflow: "scroll",
                             background: "#EEE",
-                            padding:"5px",
+                            padding: "5px",
                         },
                     }),
                     merger.ui.button("Bok", {

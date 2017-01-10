@@ -6,6 +6,14 @@ var merger = new function () {
     var sys = {
         icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
         ver: "0.3",
+        color: {
+            frame: "teal",
+            //frame:"orange",
+            framecontrast: "white",
+            text:"black",
+            windowtitle:"black",
+            selection: "lightskyblue",
+        },
     };
 
     /**
@@ -151,9 +159,9 @@ var merger = new function () {
                 left: 0,
                 width: "100%",
                 height: "21px",
-                padding: "2px 9px 2px 9px",
+                padding: "0px 5px 0px 5px",
                 backgroundColor: "white",
-                borderBottom: "1px solid black",
+                borderBottom: "1px solid " + sys.color.frame,
                 boxSizing: "border-box",
             });
             ui.menu.sysMenu = mkTag("img");
@@ -161,6 +169,15 @@ var merger = new function () {
                 width: "16px",
                 height: "16px",
                 float: "left",
+                padding: "2px 4px 2px 4px",
+            });
+            ui.menu.sysMenu.merge({
+                onmouseenter: function () {
+                    this.style.backgroundColor = sys.color.frame;
+                },
+                onmouseleave: function () {
+                    this.style.backgroundColor = "";
+                }
             });
             ui.menu.sysMenu.src = sys.icon;
             ui.menu.client = mkTag("div");
@@ -172,11 +189,12 @@ var merger = new function () {
             });
             ui.menu.time = mkTag("div");
             ui.menu.time.style.merge({
-                width: "40px",
                 float: "right",
                 fontFamily: "Arial",
                 fontSize: "14px",
                 lineHeight: "16px",
+                padding: "2px 4px 2px 4px",
+                color: sys.framecolor,
             });
             ui.menu.appendChild(ui.menu.sysMenu);
             ui.menu.appendChild(ui.menu.client);
@@ -199,7 +217,6 @@ var merger = new function () {
         c.setAttribute("merger_type", type);
         c.setAttribute("id", id);
         c.setAttribute("name", id);
-        c.style.position = "absolute";
         c._type = type;
         c.content = {};
         c.getId = function () {
@@ -283,9 +300,12 @@ var merger = new function () {
                 }
             }
         }
-        c.merge({
+        c.merge(mkDefinition({
+            style: {
+                position: "absolute",
+            },
             anchor: { top: true, right: false, bottom: false, left: true },
-        }.merge(def));
+        }, def));
         if (c.onControlCreate)
             c.onControlCreate();
         return c;
@@ -295,9 +315,29 @@ var merger = new function () {
      * Menú Item control creation
      */
     function menuItem(id, def) {
-        var m = mkTag("div").merge({
+        var m = control("menu", id, mkDefinition({
+            style: {
+                position: "",
+                display: "inline-block",
+                padding: "2px 4px 2px 4px",
+                color: sys.color.windowtitle,
+            },
+            onmouseenter: function () {
+                this.style.backgroundColor = sys.color.frame;
+                this.style.color = sys.color.framecontrast;
+            },
+            onmouseleave: function () {
+                this.style.backgroundColor = "";
+                this.style.color = sys.color.windowtitle;
+            },
+            setText: function (text) {
+                this.innerText = text;
+            },
+            setIcon: function (src) {
 
-        });
+            }
+        }, def));
+        return m;
     }
 
     /**
@@ -336,6 +376,7 @@ var merger = new function () {
                 position: "relative",
                 paddingRight: "7px",
                 userSelect: "none",
+                color: sys.color.windowtitle,
             },
             content: [
                 control("windowclosebutton", "closeButton", {
@@ -347,7 +388,7 @@ var merger = new function () {
                         height: "20px",
                         lineHeight: "20px",
                         border: "0",
-                        backgroundColor: "teal",
+                        backgroundColor: sys.color.frame,
                         padding: 0,
                         boxSizing: "content-box",
                         color: "white",
@@ -398,7 +439,7 @@ var merger = new function () {
             },
             style: {
                 backgroundColor: "white",
-                border: "1px solid teal",
+                border: "1px solid " + sys.color.frame,
                 boxShadow: "0px 0px 3px rgba(0,0,0,0.5)",
                 overflow: "hidden",
             },
@@ -454,7 +495,7 @@ var merger = new function () {
             },
             style: {
                 fontSize: "10px",
-                border: "1px solid teal",
+                border: "1px solid " + sys.framecolor,
             }
         }, def), mkTag(def.multiple ? "textarea" : "input"));
         return c;
@@ -471,9 +512,27 @@ var merger = new function () {
             style: {
                 border: "0",
                 borderRadius: "7px",
-                background: "teal",
-                color: "white",
+                background: sys.color.frame,
+                color: sys.color.framecontrast,
                 height: "20px",
+            },
+            onmousedown: function () {
+                this.style.merge({
+                    background: sys.color.framecontrast,
+                    color: sys.color.frame,
+                })
+            },
+            onmouseup: function () {
+                this.style.merge({
+                    background: sys.color.frame,
+                    color: sys.color.framecontrast,
+                })
+            },
+            onmouseleave: function () {
+                this.style.merge({
+                    background: sys.color.frame,
+                    color: sys.color.framecontrast,
+                })
             },
         }, def), mkTag("button"));
         c.setText(def.text);
@@ -501,7 +560,12 @@ var merger = new function () {
     // --------------------------
 
     function kSwitchApp(app) {
+        var i;
         ui.menu.sysMenu.src = app.icon ? app.icon : sys.icon;
+        while (ui.menu.client.lastChild)
+            ui.menu.client.removeChild(ui.menu.client.lastChild);
+        for (i in app.menu)
+            ui.menu.client.appendChild(app.menu[i]);
     }
 
     /**
@@ -510,16 +574,14 @@ var merger = new function () {
     function app(id, def) {
         if (ui.app[id])
             throw new Error("Application '" + id + "' already exists");
-        var a = {}, windows = def.windows, i;
-        ui.app[id] = a;
-        a.merge({
+        var a = {
             _type: "app",
             getId: function () {
                 return id;
             },
             title: id,
             windows: {},
-            menu: undefined,
+            menu: {},
             onLoad: function () {
 
             },
@@ -536,15 +598,24 @@ var merger = new function () {
                 if (this.onEnter)
                     this.onEnter();
             }
-        });
+        }, windows = def.windows, menu = def.menu, i;
+        ui.app[id] = a;
         delete (def.windows);
+        delete (def.menu);
         a.merge(def);
         if (windows)
             for (i = 0; i < windows.length; i++) {
                 var win = windows[i];
                 a.windows[win.getId()] = win;
-                win.parent = a;
+                win.application = win.parent = a;
             }
+        if (menu)
+            for (i = 0; i < menu.length; i++) {
+                var m = menu[i];
+                a.menu[m.getId()] = m;
+                win.application = a;
+            }
+        // Drop MainWindow feature 
         if (a.mainWindow)
             a.mainWindow = a.windows[a.mainWindow];
         if (a.onLoad)
@@ -580,6 +651,7 @@ var merger = new function () {
             textbox: textbox,
             button: button,
             picture: picture,
+            menuItem: menuItem,
         }
     });
 
@@ -602,7 +674,6 @@ var merger = new function () {
         });
         ui.menu = mkTag("div");
         ui.dsk.appendChild(ui.menu);
-
     }
 
     kInit();
