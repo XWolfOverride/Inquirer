@@ -18,9 +18,28 @@ var inquirer = inquirer || new function () {
                 title: "inquirer",
                 icon: icon,
                 menu: [
-                    merger.ui.menuItem("test", {
-text:"perico",
-                    })
+                    merger.ui.menuItem("test1", {
+                        text: "perico",
+                    }),
+                    merger.ui.menuItem("test2", {
+                        text: "Choose one",
+                        subitems: [merger.ui.menuItem("test2_s1", {
+                            text: "One",
+                            subitems: []
+                        })
+                        ]
+                    }),
+                    merger.ui.menuItem("test3", {
+                        text: "Choose two",
+                        subitems: [merger.ui.menuItem("test3_s1", {
+                            text: "One",
+                            subitems: []
+                        }), merger.ui.menuItem("test3_s2", {
+                            text: "Two",
+                            subitems: []
+                        })
+                        ],
+                    }),
                 ],
                 windows: [merger.ui.window("Wmain", {
                     title: "Error",

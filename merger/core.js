@@ -319,7 +319,7 @@ var merger = new function () {
             style: {
                 position: "",
                 display: "inline-block",
-                padding: "2px 4px 2px 4px",
+                padding: "2px 9px 2px 9px",
                 color: sys.color.windowtitle,
             },
             onmouseenter: function () {
