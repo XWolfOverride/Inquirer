@@ -185,21 +185,6 @@ var merger = new function () {
                 },
                 parentControl: sys,
             });
-            /*            ui.menu.sysMenu.style.merge({
-                            width: "16px",
-                            height: "16px",
-                            float: "left",
-                            padding: "2px 4px 2px 4px",
-                        });
-                        ui.menu.sysMenu.merge({
-                            onmouseenter: function () {
-                                this.style.backgroundColor = sys.color.frame;
-                            },
-                            onmouseleave: function () {
-                                this.style.backgroundColor = "";
-                            }
-                        });
-            ui.menu.sysMenu.src = sys.icon;*/
             ui.menu.client = mkTag("div");
             ui.menu.client.style.merge({
                 float: "left",
@@ -670,6 +655,10 @@ var merger = new function () {
                 m = merger.ui.menuItem("sys_app_" + i, {
                     icon: a.icon,
                     text: a.title,
+                    _app: a,
+                    onClick: function () {
+                        kSwitchApp(this._app);
+                    }
                 })
             );
             m.parentControl = ui.menu.sysMenu;
