@@ -15,29 +15,59 @@ var inquirer = inquirer || new function () {
     function getApp() {
         if (!inqapp)
             inqapp = merger.app("inquirer", {
-                title: "inquirer",
+                title: "Inquirer",
                 icon: icon,
-                menu: [
-                    merger.ui.menuItem("test1", {
-                        text: "perico",
+                appMenu: [
+                    merger.ui.menuItem("app_close", {
+                        text: "Close",
+                        onClick: function () {
+                            merger.leave();
+                        }
                     }),
-                    merger.ui.menuItem("test2", {
-                        text: "Choose one",
-                        subitems: [merger.ui.menuItem("test2_s1", {
-                            text: "One",
-                            subitems: []
+                ],
+                menu: [
+                    merger.ui.menuItem("app_tools", {
+                        text: "Tools",
+                        items: [merger.ui.menuItem("tool_console", {
+                            text: "Console",
                         })
                         ]
                     }),
                     merger.ui.menuItem("test3", {
                         text: "Choose two",
-                        subitems: [merger.ui.menuItem("test3_s1", {
+                        items: [merger.ui.menuItem("test3_s1", {
                             text: "One",
-                            subitems: []
                         }), merger.ui.menuItem("test3_s2", {
                             text: "Two",
-                            subitems: []
-                        })
+                        }),
+                        ],
+                    }),
+                    merger.ui.menuItem("test4", {
+                        text: "Colors",
+                        items: [merger.ui.menuItem("test4_s1", {
+                            text: "Black",
+                        }), merger.ui.menuItem("test4_s2", {
+                            text: "Red",
+                        }), merger.ui.menuItem("test4_s3", {
+                            text: "Green",
+                        }), merger.ui.menuItem("test4_s4", {
+                            text: "Yellow",
+                        }), merger.ui.menuItem("test4_s5", {
+                            text: "To decide by customer",
+                            items: [merger.ui.menuItem("test4_s5_1", {
+                                text: "Accept",
+                            }), merger.ui.menuItem("test4_s5_2", {
+                                text: "Declite",
+                            }), merger.ui.menuItem("test4_s5_3", {
+                                text: "Wait More",
+                                onClick: function () {
+                                    alert("madofaka!");
+                                }
+                            }),
+                            ],
+                        }), merger.ui.menuItem("test4_s6", {
+                            text: "White",
+                        }),
                         ],
                     }),
                 ],

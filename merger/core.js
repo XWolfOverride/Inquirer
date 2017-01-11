@@ -4,14 +4,16 @@ var merger = new function () {
      * merger system variables
      */
     var sys = {
+        _type: "system",
         icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
         ver: "0.3",
         color: {
             frame: "teal",
+            client: "white",
             //frame:"orange",
             framecontrast: "white",
-            text:"black",
-            windowtitle:"black",
+            text: "black",
+            windowtitle: "black",
             selection: "lightskyblue",
         },
     };
@@ -32,7 +34,8 @@ var merger = new function () {
 
     var ui = {
         app: {},
-        w: {}
+        w: {},
+        menu: {},
     };
 
     /**
@@ -152,6 +155,16 @@ var merger = new function () {
                 if (DragNDrop.dragging())
                     DragNDrop.update(e.clientX, e.clientY);
             }
+            ui.dsk.onclick = function (e) {
+                if (ui.menu.current) {
+                    ui.menu.current.close(true);
+                    delete (ui.menu.current);
+                }
+                if (ui.menu.showMenu) {
+                    ui.menu.showMenu.popup();
+                    delete (ui.menu.showMenu);
+                }
+            }
             ui.menu.style.merge({
                 position: "absolute",
                 zIndex: 512,
@@ -164,22 +177,29 @@ var merger = new function () {
                 borderBottom: "1px solid " + sys.color.frame,
                 boxSizing: "border-box",
             });
-            ui.menu.sysMenu = mkTag("img");
-            ui.menu.sysMenu.style.merge({
-                width: "16px",
-                height: "16px",
-                float: "left",
-                padding: "2px 4px 2px 4px",
-            });
-            ui.menu.sysMenu.merge({
-                onmouseenter: function () {
-                    this.style.backgroundColor = sys.color.frame;
+            ui.menu.sysMenu = merger.ui.menuItem("sysMenu", {
+                icon: sys.icon,
+                style: {
+                    float: "left",
+                    padding: "2px 4px 2px 9px",
                 },
-                onmouseleave: function () {
-                    this.style.backgroundColor = "";
-                }
+                parentControl: sys,
             });
-            ui.menu.sysMenu.src = sys.icon;
+            /*            ui.menu.sysMenu.style.merge({
+                            width: "16px",
+                            height: "16px",
+                            float: "left",
+                            padding: "2px 4px 2px 4px",
+                        });
+                        ui.menu.sysMenu.merge({
+                            onmouseenter: function () {
+                                this.style.backgroundColor = sys.color.frame;
+                            },
+                            onmouseleave: function () {
+                                this.style.backgroundColor = "";
+                            }
+                        });
+            ui.menu.sysMenu.src = sys.icon;*/
             ui.menu.client = mkTag("div");
             ui.menu.client.style.merge({
                 float: "left",
@@ -291,13 +311,13 @@ var merger = new function () {
                         f: (fnc && typeof fnc == "function") ? fnc.bind(this) : null, d: mdata
                     };
                 }
-                for (var key in settings) {
-                    var o = settings[key];
-                    if (o.f)
-                        o.f(o.d);
-                    else
-                        this[key] = o.d;
-                }
+            }
+            for (var key in settings) {
+                var o = settings[key];
+                if (o.f)
+                    o.f(o.d);
+                else
+                    this[key] = o.d;
             }
         }
         c.merge(mkDefinition({
@@ -315,12 +335,93 @@ var merger = new function () {
      * Menú Item control creation
      */
     function menuItem(id, def) {
-        var m = control("menu", id, mkDefinition({
+        var client, dirty = true, icon, openMark, textElement, m = control("menu", id, mkDefinition({
             style: {
                 position: "",
-                display: "inline-block",
                 padding: "2px 9px 2px 9px",
                 color: sys.color.windowtitle,
+            },
+            setText: function (text) {
+                if (!textElement)
+                    this.appendChild(textElement = document.createTextNode(text));
+                else textElement.textContent = text;
+            },
+            setIcon: function (src) {
+                if (src) {
+                    if (!icon) {
+                        this.appendChild(icon = mkTag("img"));
+                        icon.style.merge({
+                            width: "16px",
+                            height: "16px",
+                            float: "left",
+                            padding: "0 5px 0 0",
+                        });
+                    } else
+                        icon.style.display = "";
+                    icon.src = src;
+                } else if (icon) icon.style.display = "none";
+            },
+            showMoreMark: function () {
+                if (!openMark) {
+                    this.appendChild(openMark = mkTag("div"));
+                    openMark.style.merge({
+                        float: "right",
+                        padding: "0 0 0 5px",
+                    });
+                    openMark.appendChild(document.createTextNode("\u25B6"));
+                } else openMark.style.display = "";
+            },
+            hideMoreMark: function () {
+                if (openMark)
+                    openMark.style.display = "none";
+            },
+            popup: function () {
+                if (this.parentControl._type == "menu")
+                    this.parentControl.popup();
+                if (client && client._visible)
+                    return;
+                if (!client) {
+                    client = control("menuClient", id + "_client", {
+                        style: {
+                            background: sys.color.client,
+                            border: "1px solid " + sys.color.frame,
+                            fontFamily: "Arial",
+                            fontSize: "14px",
+                        }
+                    });
+                    ui.dsk.appendChild(client);
+                }
+                var bounds = this.getBoundingClientRect();
+                if (this.parentControl._type == "menu")
+                    client.merge({
+                        top: bounds.top,
+                        left: bounds.left + bounds.width,
+                    });
+                else
+                    client.merge({
+                        top: bounds.top + bounds.height,
+                        left: bounds.left,
+                    });
+                while (client.lastChild)
+                    client.removeChild(client.lastChild);
+                for (i in this.items) {
+                    var m = this.items[i];
+                    m.application = this.applicaiton;
+                    m.parentControl = this;
+                    if (m.items)
+                        m.showMoreMark();
+                    client.appendChild(m);
+                }
+                ui.menu.current = this;
+                client.show();
+            },
+            close: function (all) {
+                if (client)
+                    client.hide();
+                if (ui.menu.current == this)
+                    ui.menu.current = null;
+                if (all && this.parentControl._type == "menu")
+                    this.parentControl.close(all);
             },
             onmouseenter: function () {
                 this.style.backgroundColor = sys.color.frame;
@@ -330,11 +431,11 @@ var merger = new function () {
                 this.style.backgroundColor = "";
                 this.style.color = sys.color.windowtitle;
             },
-            setText: function (text) {
-                this.innerText = text;
-            },
-            setIcon: function (src) {
-
+            onclick: function () {
+                if (this.items)
+                    ui.menu.showMenu = this;
+                else if (this.onClick)
+                    this.onClick.apply(this, arguments);
             }
         }, def));
         return m;
@@ -560,8 +661,19 @@ var merger = new function () {
     // --------------------------
 
     function kSwitchApp(app) {
-        var i;
-        ui.menu.sysMenu.src = app.icon ? app.icon : sys.icon;
+        var i, m, a;
+        ui.menu.sysMenu.setIcon(app.icon ? app.icon : sys.icon);
+        ui.menu.sysMenu.items = [];
+        for (i in ui.app) {
+            a = ui.app[i];
+            ui.menu.sysMenu.items.push(
+                m = merger.ui.menuItem("sys_app_" + i, {
+                    icon: a.icon,
+                    text: a.title,
+                })
+            );
+            m.parentControl = ui.menu.sysMenu;
+        }
         while (ui.menu.client.lastChild)
             ui.menu.client.removeChild(ui.menu.client.lastChild);
         for (i in app.menu)
@@ -607,13 +719,15 @@ var merger = new function () {
             for (i = 0; i < windows.length; i++) {
                 var win = windows[i];
                 a.windows[win.getId()] = win;
-                win.application = win.parent = a;
+                win.application = win.parentControl = a;
             }
         if (menu)
             for (i = 0; i < menu.length; i++) {
                 var m = menu[i];
                 a.menu[m.getId()] = m;
-                win.application = a;
+                m.application = m.parentControl = a;
+                m.style.display = "inline-block";
+                m._root = true;
             }
         // Drop MainWindow feature 
         if (a.mainWindow)
@@ -652,6 +766,9 @@ var merger = new function () {
             button: button,
             picture: picture,
             menuItem: menuItem,
+        },
+        conf: {
+            color: sys.color,
         }
     });
 
@@ -683,5 +800,6 @@ var merger = new function () {
  * Test app
  */
 merger.app("merger", {
+    title: "Merger Sample Application (Kill)"
 
 });
