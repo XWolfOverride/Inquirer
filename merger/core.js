@@ -16,6 +16,8 @@ var merger = new function () {
             windowtitle: "black",
             selection: "lightskyblue",
         },
+        icons: {
+        }
     };
 
     /**
@@ -42,9 +44,7 @@ var merger = new function () {
      * Toolbar clock logic
      */
     function clockTick() {
-        var now = new Date();
-        var h = now.getHours();
-        var m = now.getMinutes();
+        var now = new Date(), h = now.getHours(), m = now.getMinutes();
         if (h < 10) h = "0" + h;
         if (m < 10) m = "0" + m;
         ui.menu.time.innerText = h + ":" + m;
@@ -109,6 +109,20 @@ var merger = new function () {
         if (a.style)
             b.style = a.style.merge(b.style);
         return a.merge(b);
+    }
+
+    /**
+     * Create a standard SVG icon
+     */
+    function mkIcon(color, text) {
+        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128' version='1.1'><circle cx='64' cy='64' r='62' id='c' style='fill:" + color + ";fill-opacity:1' /><text text-anchor='middle' alignment-baseline='alphabetic' style='font-weight:bold;font-size:90px;font-family:sans-serif;fill:#ffffff;stroke:none;' x='64' y='95'>" + text + "</text></svg>";
+    }
+
+    /**
+     * Return current configured help icon
+     */
+    function getHelpIcon() {
+        return sys.icons.help ? sys.icons.help : mkIcon(sys.color.frame, '?');
     }
 
     /**
@@ -317,7 +331,7 @@ var merger = new function () {
     }
 
     /**
-     * Menú Item control creation
+     * Menu Item control creation
      */
     function menuItem(id, def) {
         var client, dirty = true, icon, openMark, textElement, m = control("menu", id, mkDefinition({
@@ -423,6 +437,31 @@ var merger = new function () {
                     this.onClick.apply(this, arguments);
             }
         }, def));
+        return m;
+    }
+
+    /**
+     * Menu separator control creation
+     */
+    function menuSeparator(id, def) {
+        var line, m = menuItem(id, {
+            setText: undefined,
+            setIcon: undefined,
+            showMoreMark: undefined,
+            onmouseenter: undefined,
+            onmouseleave: undefined,
+            onclick: function () {
+                ui.menu.showMenu = this.parentControl;
+            },
+            onControlCreate: function () {
+                this.appendChild(line = document.createElement("div"));
+                line.style.merge({
+                    width: "100%",
+                    height: "1px",
+                    background: sys.color.frame,
+                });
+            },
+        })
         return m;
     }
 
@@ -649,11 +688,25 @@ var merger = new function () {
         var i, m, a;
         ui.menu.sysMenu.setIcon(app.icon ? app.icon : sys.icon);
         ui.menu.sysMenu.items = [];
+        if (app.onAbout) {
+            ui.menu.sysMenu.items.push(
+                m = merger.ui.menuItem("sys_about" + i, {
+                    icon: getHelpIcon(),
+                    text: "About " + app.title,
+                    onClick: function () {
+                        app.onAbout();
+                    }
+                })
+            );
+            m.parentControl = ui.menu.sysMenu;
+            ui.menu.sysMenu.items.push(m = menuSeparator("sys_sep1"));
+            m.parentControl = ui.menu.sysMenu;
+        }
         for (i in ui.app) {
             a = ui.app[i];
             ui.menu.sysMenu.items.push(
                 m = merger.ui.menuItem("sys_app_" + i, {
-                    icon: a.icon,
+                    icon: a.icon ? a.icon : sys.icon,
                     text: a.title,
                     _app: a,
                     onClick: function () {
@@ -755,9 +808,14 @@ var merger = new function () {
             button: button,
             picture: picture,
             menuItem: menuItem,
+            menuSeparator: menuSeparator,
+        },
+        media: {
+            createIcon: mkIcon,
         },
         conf: {
             color: sys.color,
+            icon: sys.icons,
         }
     });
 

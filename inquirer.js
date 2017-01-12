@@ -26,21 +26,22 @@ var inquirer = inquirer || new function () {
                     }),
                 ],
                 menu: [
+                    merger.ui.menuItem("app_main", {
+                        text: "Inquirer",
+                        items: [merger.ui.menuItem("app_close", {
+                            text: "Close",
+                            onClick: function () {
+                                merger.leave();
+                            }
+                        }),
+                        ],
+                    }),
                     merger.ui.menuItem("app_tools", {
                         text: "Tools",
                         items: [merger.ui.menuItem("tool_console", {
                             text: "Console",
                         })
                         ]
-                    }),
-                    merger.ui.menuItem("test3", {
-                        text: "Choose two",
-                        items: [merger.ui.menuItem("test3_s1", {
-                            text: "One",
-                        }), merger.ui.menuItem("test3_s2", {
-                            text: "Two",
-                        }),
-                        ],
                     }),
                     merger.ui.menuItem("test4", {
                         text: "Colors",
@@ -126,6 +127,9 @@ var inquirer = inquirer || new function () {
                 mainWindow: "Wmain",
                 onLoad: function () {
 
+                },
+                onAbout: function () {
+                    alert("Pos claro");
                 },
                 showError: function (message, data) {
                     this.windows.Wmain.setError(message, data);
