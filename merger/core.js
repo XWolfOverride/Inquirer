@@ -366,8 +366,7 @@ var merger = new function () {
             setText: function (text) {
                 if (!textElement)
                     this.appendChild(textElement = document.createTextNode(text));
-                else
-                    textElement.textContent = text;
+                else textElement.textContent = text;
             },
             setIcon: function (src) {
                 if (src) {
@@ -382,8 +381,7 @@ var merger = new function () {
                     } else
                         icon.style.display = "";
                     icon.src = src;
-                } else if (icon)
-                    icon.style.display = "none";
+                } else if (icon) icon.style.display = "none";
             },
             showMoreMark: function () {
                 if (!openMark) {
@@ -393,8 +391,7 @@ var merger = new function () {
                         padding: "0 0 0 5px",
                     });
                     openMark.appendChild(document.createTextNode("\u25B6"));
-                } else
-                    openMark.style.display = "";
+                } else openMark.style.display = "";
             },
             hideMoreMark: function () {
                 if (openMark)
@@ -529,7 +526,8 @@ var merger = new function () {
                 userSelect: "none",
                 color: sys.color.windowtitle,
             },
-            content: [control("windowclosebutton", "closeButton", {
+            content: [
+                control("windowclosebutton", "closeButton", {
                 visible: !def.hideCloseButton,
                 style: {
                     top: "0",
@@ -550,7 +548,8 @@ var merger = new function () {
                     w.close();
                 },
                 text: "X",
-            }, document.createElement("button"))],
+                }, document.createElement("button"))
+            ],
             setTitle: function (title) {
                 if (!this._textNode) {
                     this._textNode = document.createTextNode("");
@@ -568,10 +567,7 @@ var merger = new function () {
         // Window client
         var wc = control("windowclient", "client", {
             content: def.content,
-            style: {
-                position: "relative",
-                margin: "5px"
-            },
+            style: { position: "relative", margin: "5px" },
             width: dw,
             height: dh,
         });
@@ -719,27 +715,31 @@ var merger = new function () {
         ui.menu.sysMenu.setIcon(app.icon ? app.icon : sys.icon);
         ui.menu.sysMenu.items = [];
         if (app.onAbout) {
-            ui.menu.sysMenu.items.push(m = merger.ui.menuItem("sys_about" + i, {
-                icon: getHelpIcon(),
-                text: "About " + app.title,
-                onClick: function () {
-                    app.onAbout();
-                }
-            }));
+            ui.menu.sysMenu.items.push(
+                m = merger.ui.menuItem("sys_about" + i, {
+                    icon: getHelpIcon(),
+                    text: "About " + app.title,
+                    onClick: function () {
+                        app.onAbout();
+                    }
+                })
+            );
             m.parentControl = ui.menu.sysMenu;
             ui.menu.sysMenu.items.push(m = menuSeparator("sys_sep1"));
             m.parentControl = ui.menu.sysMenu;
         }
         for (i in ui.app) {
             a = ui.app[i];
-            ui.menu.sysMenu.items.push(m = merger.ui.menuItem("sys_app_" + i, {
-                icon: a.icon ? a.icon : sys.icon,
-                text: a.title,
-                _app: a,
-                onClick: function () {
-                    kSwitchApp(this._app);
-                }
-            }));
+            ui.menu.sysMenu.items.push(
+                m = merger.ui.menuItem("sys_app_" + i, {
+                    icon: a.icon ? a.icon : sys.icon,
+                    text: a.title,
+                    _app: a,
+                    onClick: function () {
+                        kSwitchApp(this._app);
+                    }
+                })
+            );
             m.parentControl = ui.menu.sysMenu;
         }
         while (ui.menu.client.lastChild)
