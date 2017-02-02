@@ -1,8 +1,30 @@
+/*
+ * Merger UI.
+ * Copyright 2016 XWolfOVerride@gmail.com
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify,
+ * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to 
+ * permit persons to whom the Software is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies
+ * or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+ * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 var merger = new function () {
 
-    /**
-     * merger system variables
-     */
+	/**
+	 * merger system variables
+	 */
     var sys = {
         _type: "system",
         icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
@@ -10,22 +32,22 @@ var merger = new function () {
         color: {
             frame: "teal",
             client: "white",
-            //frame:"orange",
+            // frame:"orange",
             framecontrast: "white",
             text: "black",
             windowtitle: "black",
             selection: "lightskyblue",
         },
-        icons: {
-        }
+        icons: {}
     };
 
-    /**
-     * merge method the root of all merger framework
-     */
+	/**
+	 * merge method the root of all merger framework
+	 */
     if (!Object.prototype.merge)
         Object.defineProperty(Object.prototype, "merge", {
-            writable: true, value: function (src) {
+            writable: true,
+            value: function (src) {
                 if (!src)
                     return this;
                 for (var key in src)
@@ -40,13 +62,15 @@ var merger = new function () {
         menu: {},
     };
 
-    /**
-     * Toolbar clock logic
-     */
+	/**
+	 * Toolbar clock logic
+	 */
     function clockTick() {
         var now = new Date(), h = now.getHours(), m = now.getMinutes();
-        if (h < 10) h = "0" + h;
-        if (m < 10) m = "0" + m;
+        if (h < 10)
+            h = "0" + h;
+        if (m < 10)
+            m = "0" + m;
         ui.menu.time.innerText = h + ":" + m;
     }
 
@@ -67,7 +91,7 @@ var merger = new function () {
             when: function () {
                 return true;
             },
-            do: function () {
+            "do": function () {
             },
             each: undefined
         }.merge(ctrl);
@@ -75,24 +99,24 @@ var merger = new function () {
             if (!this.when())
                 setTimeout(this.check.bind(this), this.each);
             else
-                this.do();
+                this["do"]();
         }
         controller.check();
     }
 
-    // ---- UI implementation    
+    // ---- UI implementation
     // ----------------------
 
-    /**
-     * Tool for creating tags
-     */
+	/**
+	 * Tool for creating tags
+	 */
     function mkTag(tag) {
         return document.createElement(tag);
     }
 
-    /**
-     * Tool for injecting CSS rules
-     */
+	/**
+	 * Tool for injecting CSS rules
+	 */
     function mkCSS(css) {
         style = mkTag('style');
         if (style.styleSheet)
@@ -102,32 +126,32 @@ var merger = new function () {
         document.getElementsByTagName('head')[0].appendChild(style);
     }
 
-    /**
-     * Function to merge control definition preserving style
-     */
+	/**
+	 * Function to merge control definition preserving style
+	 */
     function mkDefinition(a, b) {
         if (a.style)
             b.style = a.style.merge(b.style);
         return a.merge(b);
     }
 
-    /**
-     * Create a standard SVG icon
-     */
+	/**
+	 * Create a standard SVG icon
+	 */
     function mkIcon(color, text) {
         return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128' version='1.1'><circle cx='64' cy='64' r='62' id='c' style='fill:" + color + ";fill-opacity:1' /><text text-anchor='middle' alignment-baseline='alphabetic' style='font-weight:bold;font-size:90px;font-family:sans-serif;fill:#ffffff;stroke:none;' x='64' y='95'>" + text + "</text></svg>";
     }
 
-    /**
-     * Return current configured help icon
-     */
+	/**
+	 * Return current configured help icon
+	 */
     function getHelpIcon() {
         return sys.icons.help ? sys.icons.help : mkIcon(sys.color.frame, '?');
     }
 
-    /**
-     * Drag'N'Drop system
-     */
+	/**
+	 * Drag'N'Drop system
+	 */
 
     var DragNDrop = new (function () {
         var item, point;
@@ -142,9 +166,8 @@ var merger = new function () {
             drop: function (ctl) {
                 if (!ctl)
                     item = null;
-                else
-                    if (item == ctl)
-                        item = null;
+                else if (item == ctl)
+                    item = null;
             },
             dragging: function () {
                 return item ? true : false;
@@ -227,9 +250,9 @@ var merger = new function () {
         document.body.appendChild(ui.dsk);
     }
 
-    /**
-     * Base control creation
-     */
+	/**
+	 * Base control creation
+	 */
     function control(type, id, def, c) {
         if (!c)
             c = mkTag("div");
@@ -330,9 +353,9 @@ var merger = new function () {
         return c;
     }
 
-    /**
-     * Menu Item control creation
-     */
+	/**
+	 * Menu Item control creation
+	 */
     function menuItem(id, def) {
         var client, dirty = true, icon, openMark, textElement, m = control("menu", id, mkDefinition({
             style: {
@@ -343,7 +366,8 @@ var merger = new function () {
             setText: function (text) {
                 if (!textElement)
                     this.appendChild(textElement = document.createTextNode(text));
-                else textElement.textContent = text;
+                else
+                    textElement.textContent = text;
             },
             setIcon: function (src) {
                 if (src) {
@@ -358,7 +382,8 @@ var merger = new function () {
                     } else
                         icon.style.display = "";
                     icon.src = src;
-                } else if (icon) icon.style.display = "none";
+                } else if (icon)
+                    icon.style.display = "none";
             },
             showMoreMark: function () {
                 if (!openMark) {
@@ -368,7 +393,8 @@ var merger = new function () {
                         padding: "0 0 0 5px",
                     });
                     openMark.appendChild(document.createTextNode("\u25B6"));
-                } else openMark.style.display = "";
+                } else
+                    openMark.style.display = "";
             },
             hideMoreMark: function () {
                 if (openMark)
@@ -440,9 +466,9 @@ var merger = new function () {
         return m;
     }
 
-    /**
-     * Menu separator control creation
-     */
+	/**
+	 * Menu separator control creation
+	 */
     function menuSeparator(id, def) {
         var line, m = menuItem(id, {
             setText: undefined,
@@ -465,9 +491,9 @@ var merger = new function () {
         return m;
     }
 
-    /**
-     * Window control creation
-     */
+	/**
+	 * Window control creation
+	 */
     function window(id, def) {
         if (typeof (def) != "object")
             def = {};
@@ -503,30 +529,28 @@ var merger = new function () {
                 userSelect: "none",
                 color: sys.color.windowtitle,
             },
-            content: [
-                control("windowclosebutton", "closeButton", {
-                    visible: !def.hideCloseButton,
-                    style: {
-                        top: "0",
-                        left: "0",
-                        width: "25px",
-                        height: "20px",
-                        lineHeight: "20px",
-                        border: "0",
-                        backgroundColor: sys.color.frame,
-                        padding: 0,
-                        boxSizing: "content-box",
-                        color: "white",
-                    },
-                    setText: function (text) {
-                        this.innerText = text;
-                    },
-                    onclick: function () {
-                        w.close();
-                    },
-                    text: "X",
-                }, document.createElement("button"))
-            ],
+            content: [control("windowclosebutton", "closeButton", {
+                visible: !def.hideCloseButton,
+                style: {
+                    top: "0",
+                    left: "0",
+                    width: "25px",
+                    height: "20px",
+                    lineHeight: "20px",
+                    border: "0",
+                    backgroundColor: sys.color.frame,
+                    padding: 0,
+                    boxSizing: "content-box",
+                    color: "white",
+                },
+                setText: function (text) {
+                    this.innerText = text;
+                },
+                onclick: function () {
+                    w.close();
+                },
+                text: "X",
+            }, document.createElement("button"))],
             setTitle: function (title) {
                 if (!this._textNode) {
                     this._textNode = document.createTextNode("");
@@ -544,7 +568,10 @@ var merger = new function () {
         // Window client
         var wc = control("windowclient", "client", {
             content: def.content,
-            style: { position: "relative", margin: "5px" },
+            style: {
+                position: "relative",
+                margin: "5px"
+            },
             width: dw,
             height: dh,
         });
@@ -584,9 +611,9 @@ var merger = new function () {
         return w;
     }
 
-    /**
-     * Picture control creation
-     */
+	/**
+	 * Picture control creation
+	 */
     function picture(id, def) {
         var c = control("picture", id, mkDefinition({
             setSrc: function (src) {
@@ -596,9 +623,9 @@ var merger = new function () {
         return c;
     }
 
-    /**
-     * Label control creation
-     */
+	/**
+	 * Label control creation
+	 */
     function label(id, def) {
         var c = control("label", id, mkDefinition({
             setText: function (text) {
@@ -610,9 +637,9 @@ var merger = new function () {
         return c;
     }
 
-    /**
-     * TextBox control creation
-     */
+	/**
+	 * TextBox control creation
+	 */
     function textbox(id, def) {
         var c = control("textbox", id, mkDefinition({
             setText: function (value) {
@@ -626,9 +653,9 @@ var merger = new function () {
         return c;
     }
 
-    /**
-     * Button control creation
-     */
+	/**
+	 * Button control creation
+	 */
     function button(id, def) {
         var c = control("button", id, mkDefinition({
             setText: function (text) {
@@ -661,27 +688,30 @@ var merger = new function () {
             },
         }, def), mkTag("button"));
         c.setText(def.text);
-        c.addEventListener("click", function () { if (this.onClick) this.onClick.apply(this, arguments) }, false);
+        c.addEventListener("click", function () {
+            if (this.onClick)
+                this.onClick.apply(this, arguments)
+        }, false);
         return c;
     }
 
-    /**
-     * List control creation
-     */
+	/**
+	 * List control creation
+	 */
     function list(id, def) {
         var c = control("list", id, def);
         c.style.border = "1px solid red";
         return c;
     }
 
-    /**
-     * Component path getter
-     */
+	/**
+	 * Component path getter
+	 */
     function get(id) {
         return ui.w[id];
     }
 
-    // ---- Kernel implementation    
+    // ---- Kernel implementation
     // --------------------------
 
     function kSwitchApp(app) {
@@ -689,31 +719,27 @@ var merger = new function () {
         ui.menu.sysMenu.setIcon(app.icon ? app.icon : sys.icon);
         ui.menu.sysMenu.items = [];
         if (app.onAbout) {
-            ui.menu.sysMenu.items.push(
-                m = merger.ui.menuItem("sys_about" + i, {
-                    icon: getHelpIcon(),
-                    text: "About " + app.title,
-                    onClick: function () {
-                        app.onAbout();
-                    }
-                })
-            );
+            ui.menu.sysMenu.items.push(m = merger.ui.menuItem("sys_about" + i, {
+                icon: getHelpIcon(),
+                text: "About " + app.title,
+                onClick: function () {
+                    app.onAbout();
+                }
+            }));
             m.parentControl = ui.menu.sysMenu;
             ui.menu.sysMenu.items.push(m = menuSeparator("sys_sep1"));
             m.parentControl = ui.menu.sysMenu;
         }
         for (i in ui.app) {
             a = ui.app[i];
-            ui.menu.sysMenu.items.push(
-                m = merger.ui.menuItem("sys_app_" + i, {
-                    icon: a.icon ? a.icon : sys.icon,
-                    text: a.title,
-                    _app: a,
-                    onClick: function () {
-                        kSwitchApp(this._app);
-                    }
-                })
-            );
+            ui.menu.sysMenu.items.push(m = merger.ui.menuItem("sys_app_" + i, {
+                icon: a.icon ? a.icon : sys.icon,
+                text: a.title,
+                _app: a,
+                onClick: function () {
+                    kSwitchApp(this._app);
+                }
+            }));
             m.parentControl = ui.menu.sysMenu;
         }
         while (ui.menu.client.lastChild)
@@ -722,9 +748,9 @@ var merger = new function () {
             ui.menu.client.appendChild(app.menu[i]);
     }
 
-    /**
-     * Application creation
-     */
+	/**
+	 * Application creation
+	 */
     function app(id, def) {
         if (ui.app[id])
             throw new Error("Application '" + id + "' already exists");
@@ -771,7 +797,7 @@ var merger = new function () {
                 m.style.display = "inline-block";
                 m._root = true;
             }
-        // Drop MainWindow feature 
+        // Drop MainWindow feature
         if (a.mainWindow)
             a.mainWindow = a.windows[a.mainWindow];
         if (a.onLoad)
@@ -783,15 +809,14 @@ var merger = new function () {
         openDesktop();
     }
 
-
     function leave() {
         if (document.body.contains(ui.dsk))
             document.body.removeChild(ui.dsk);
     }
 
-    /**
-     * merger API
-     */
+	/**
+	 * merger API
+	 */
     // -- Kernel
     this.merge({
         app: app,
@@ -819,9 +844,9 @@ var merger = new function () {
         }
     });
 
-    /**
-     * Initializes merger subsystem
-     */
+	/**
+	 * Initializes merger subsystem
+	 */
     function kInit() {
         ui.dsk = mkTag("div");
         ui.dsk.style.merge({
