@@ -248,4 +248,9 @@ var inquirer = inquirer || new function () {
     // Hook the page now
     hook();
 
+    window.addEventListener("load",function(){
+        setTimeout(function() {
+            getApp();
+        }, 100);
+    })
 } ();
