@@ -209,7 +209,7 @@ var merger = new function () {
                 left: 0,
                 width: "100%",
                 height: "21px",
-                padding: "0px 5px 0px 5px",
+                padding: "0px 5px 0px 0px",
                 backgroundColor: "white",
                 borderBottom: "1px solid " + sys.color.frame,
                 boxSizing: "border-box",
@@ -218,12 +218,26 @@ var merger = new function () {
                 icon: sys.icon,
                 style: {
                     float: "left",
-                    padding: "2px 4px 2px 9px",
+                    padding: "2px 7px 2px 12px",
+                    fontFamily: "Arial",
+                    fontSize: "14px",
+                    lineHeight: "16px",
+                    backgroundColor: sys.color.frame,
+                    color: "white",
+                },
+                onmouseenter: function () {
+                    this.style.backgroundColor = "";
+                    this.style.color = sys.color.windowtitle;
+                },
+                onmouseleave: function () {
+                    this.style.backgroundColor = sys.color.frame;
+                    this.style.color = sys.color.framecontrast;
                 },
                 parentControl: sys,
             });
             ui.menu.client = mkTag("div");
             ui.menu.client.style.merge({
+                padding: "0 0 0 1px",
                 float: "left",
                 fontFamily: "Arial",
                 fontSize: "14px",
@@ -713,6 +727,7 @@ var merger = new function () {
     function kSwitchApp(app) {
         var i, m, a;
         ui.menu.sysMenu.setIcon(app.icon ? app.icon : sys.icon);
+        ui.menu.sysMenu.setText(app.title ? app.title : app.id);
         ui.menu.sysMenu.items = [];
         if (app.onAbout) {
             ui.menu.sysMenu.items.push(
