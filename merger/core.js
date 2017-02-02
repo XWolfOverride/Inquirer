@@ -1,5 +1,5 @@
 /*
- * Merger UI.
+ * Merger UI V0.3
  * Copyright 2016 XWolfOVerride@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
@@ -528,26 +528,26 @@ var merger = new function () {
             },
             content: [
                 control("windowclosebutton", "closeButton", {
-                visible: !def.hideCloseButton,
-                style: {
-                    top: "0",
-                    left: "0",
-                    width: "25px",
-                    height: "20px",
-                    lineHeight: "20px",
-                    border: "0",
-                    backgroundColor: sys.color.frame,
-                    padding: 0,
-                    boxSizing: "content-box",
-                    color: "white",
-                },
-                setText: function (text) {
-                    this.innerText = text;
-                },
-                onclick: function () {
-                    w.close();
-                },
-                text: "X",
+                    visible: !def.hideCloseButton,
+                    style: {
+                        top: "0",
+                        left: "0",
+                        width: "25px",
+                        height: "20px",
+                        lineHeight: "20px",
+                        border: "0",
+                        backgroundColor: sys.color.frame,
+                        padding: 0,
+                        boxSizing: "content-box",
+                        color: "white",
+                    },
+                    setText: function (text) {
+                        this.innerText = text;
+                    },
+                    onclick: function () {
+                        w.close();
+                    },
+                    text: "X",
                 }, document.createElement("button"))
             ],
             setTitle: function (title) {
@@ -849,6 +849,7 @@ var merger = new function () {
 	 */
     function kInit() {
         ui.dsk = mkTag("div");
+        ui.dsk.id = "Merger::Desktop";
         ui.dsk.style.merge({
             position: "absolute",
             zIndex: 510,
