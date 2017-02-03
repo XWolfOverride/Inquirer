@@ -164,7 +164,7 @@ var inquirer = inquirer || new function () {
     }
 
     function show() {
-        getApp().focus();
+        getApp().show();
     }
 
     function hide() {

@@ -86,10 +86,14 @@ var merger = new function () {
                         DragNDrop.update(e.clientX, e.clientY);
                 });
                 dsk.addEventListener("click", function (e) {
-                    if (menuCurrent)
+                    if (menuCurrent) {
                         menuCurrent.close(true);
-                    if (menuToShow)
+                        menuCurrent = undefined;
+                    }
+                    if (menuToShow) {
                         menuToShow.popup();
+                        menuToShow = undefined;
+                    }
                 });
             }
             return dsk;
@@ -219,18 +223,18 @@ var merger = new function () {
         function switchApplication(a) {
             var i, m, ax, menu = getMenu();
             if (!a)
-                if (sys.selectedApp && a == sys.selectedApp)
-                    a = sys.selectedApp;
+                if (selectedApp && a == selectedApp)
+                    a = selectedApp;
                 else
                     if (Object.keys(apps).length > 0)
                         a = apps[Object.keys(apps)[0]];
                     else return false;
             if (typeof a === "string") {
-                a = app[a]
+                a = apps[a]
                 if (!a)
                     return false;
             }
-            sys.selectedApp = a;
+            selectedApp = a;
             menu.sysMenu.setIcon(a.icon ? a.icon : sys.icon);
             menu.sysMenu.setText(a.title ? a.title : a.id);
             menu.sysMenu.items = [];
@@ -286,7 +290,7 @@ var merger = new function () {
 
         /** Check if menu is marked as current */
         function menu_isCurrent(menu) {
-            return menuCurrent = menu;
+            return menuCurrent == menu;
         }
 
         this.merge({
