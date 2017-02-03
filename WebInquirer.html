@@ -34,25 +34,28 @@
             rimg.style.display = isiz === 0 ? "none" : "";
         }
     </script>
-<style>
-        #rimg{
-            border:5px solid black;
+    <style>
+        #rimg {
+            border: 5px solid black;
         }
     </style>
 </head>
 
 <body>
     <button onclick="1=1">Error</button><br/>
-<button onclick="inquirer.show()">Call Inquirer</button><br/>
-<button onclick="inquirer.inspect(testData)">Inspector</button><br/>
-<p>
-    <button onclick="showImage(undefined,0)">Show Macos 7</button><br/>
-<button onclick="showImage(undefined,1)">Windows 10</button><br/>
-<button onclick="showImage(0.5)">Small Reference Image</button><br/>
-<button onclick="showImage(1)">Big Reference Image</button><br/>
-<button onclick="showImage(0)">Hide Reference Image</button>
-</p>
-<img id="rimg" src="" style="display:none">
+    <button onclick="inquirer.show()">Call Inquirer</button><br/>
+    <button onclick="inquirer.inspect(testData)">Inspector</button><br/>
+    <p>
+        <button onclick="merger.enter()">Enter Merger</button><br/>
+    </p>
+    <p>
+        <button onclick="showImage(undefined,0)">Show Macos 7</button><br/>
+        <button onclick="showImage(undefined,1)">Windows 10</button><br/>
+        <button onclick="showImage(0.5)">Small Reference Image</button><br/>
+        <button onclick="showImage(1)">Big Reference Image</button><br/>
+        <button onclick="showImage(0)">Hide Reference Image</button>
+    </p>
+    <img id="rimg" src="" style="display:none">
 </body>
 
 </html>
