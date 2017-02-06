@@ -62,12 +62,12 @@ var merger = new function () {
 	 * Merger Core
 	 */
     function MergerCore() {
-        var apps = {}, initialized = false, selectedApp, dsk, menu, menuToShow, menuCurrent;
+        var apps = {}, initialized = false, selectedApp, dsk, menu, menuToShow, menuCurrent, core = this;
 
         /** Return desktop element */
         function getDesktop() {
             if (!dsk) {
-                dsk = this.mkTag("div");
+                dsk = core.mkTag("div");
                 dsk.setAttribute("id", "Merger::Desktop");
                 dsk.style.merge({
                     position: "absolute",
