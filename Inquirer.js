@@ -42,22 +42,13 @@ var inquirer = inquirer || new function () {
                 appMenu: [
                     merger.ui.menuItem("app_close", {
                         text: "Close",
+                        icon: merger.media.closeIcon(),
                         onClick: function () {
                             merger.leave();
                         }
                     }),
                 ],
                 menu: [
-                    merger.ui.menuItem("app_main", {
-                        text: "Inquirer",
-                        items: [merger.ui.menuItem("app_close", {
-                            text: "Close",
-                            onClick: function () {
-                                merger.leave();
-                            }
-                        }),
-                        ],
-                    }),
                     merger.ui.menuItem("app_tools", {
                         text: "Tools",
                         items: [merger.ui.menuItem("tool_console", {
@@ -146,15 +137,15 @@ var inquirer = inquirer || new function () {
                         this.content.Tinfo.setText(JSON.stringify(data, null, 2));
                     }
                 })],
-                mainWindow: "Wmain",
                 onLoad: function () {
-
+                    this.windows.Wmain.hide();
                 },
                 onAbout: function () {
                     alert("Pos claro");
                 },
                 showError: function (message, data) {
                     this.windows.Wmain.setError(message, data);
+                    this.windows.Wmain.show();
                 },
                 log: function (info) {
 
@@ -248,7 +239,7 @@ var inquirer = inquirer || new function () {
     // Hook the page now
     hook();
 
-    window.addEventListener("load",function(){
-            getApp();
+    window.addEventListener("load", function () {
+        getApp();
     })
-} ();
+}();

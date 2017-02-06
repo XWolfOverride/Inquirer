@@ -250,22 +250,34 @@ var merger = new function () {
                 })
             );
             m.parentControl = menu.sysMenu;
-            menu.sysMenu.items.push(m = menuSeparator("sys_applications_separator"));
-            m.parentControl = menu.sysMenu;
-            for (i in apps) {
-                ax = apps[i];
-                menu.sysMenu.items.push(
-                    m = merger.ui.menuItem("sys_app_" + i, {
-                        icon: ax.icon ? ax.icon : sys.icon,
-                        text: ax.title,
-                        _app: ax,
-                        onClick: function () {
-                            switchApplication(this._app);
-                        }
-                    })
-                );
+            if (Object.keys(apps).length > 1) {
+                menu.sysMenu.items.push(m = menuSeparator("sys_applications_separator1"));
                 m.parentControl = menu.sysMenu;
+                for (i in apps) {
+                    ax = apps[i];
+                    menu.sysMenu.items.push(
+                        m = merger.ui.menuItem("sys_app_" + i, {
+                            icon: ax.icon ? ax.icon : sys.icon,
+                            text: ax.title,
+                            _app: ax,
+                            onClick: function () {
+                                switchApplication(this._app);
+                            }
+                        })
+                    );
+                    m.parentControl = menu.sysMenu;
+                }
             }
+            // Application appMenu
+            if (a.appMenu && a.appMenu.length > 0) {
+                menu.sysMenu.items.push(m = menuSeparator("sys_applications_separator2"));
+                m.parentControl = menu.sysMenu;
+                for (i in a.appMenu) {
+                    menu.sysMenu.items.push(m = a.appMenu[i]);
+                    m.parentControl = menu.sysMenu;
+                }
+            }
+            // Application menu
             while (menu.client.lastChild)
                 menu.client.removeChild(menu.client.lastChild);
             for (i in a.menu)
@@ -340,6 +352,13 @@ var merger = new function () {
         return sys.icons.help ? sys.icons.help : this.mkIcon(sys.color.frame, '?');
     }
 
+    /**
+     * Return current configured close icon
+     */
+    MergerCore.prototype.getCloseIcon = function () {
+        return sys.icons.help ? sys.icons.help : this.mkIcon(sys.color.frame, 'X');
+    }
+
     core = new MergerCore();
 
     //=== Merger Application Framework
@@ -371,8 +390,7 @@ var merger = new function () {
         this.windows[win.getId()] = win;
         win.application = win.parentControl = this;
         win.setAttribute("id", this.getId() + "::" + win.getId());
-        if (win.getVisible())
-            core.getDesktop().appendChild(win);
+        core.getDesktop().appendChild(win);
     }
 
     /** Remove window from applicaiton */
@@ -917,6 +935,8 @@ var merger = new function () {
         },
         media: {
             createIcon: core.mkIcon,
+            helpIcon: core.getHelpIcon.bind(core),
+            closeIcon: core.getCloseIcon.bind(core),
         },
         conf: {
             color: sys.color,
@@ -924,10 +944,3 @@ var merger = new function () {
         }
     });
 }
-
-/**
- * Test app
- */
-merger.app("merger", {
-    title: "Merger Sample Application (Kill)"
-});
