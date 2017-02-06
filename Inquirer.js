@@ -56,34 +56,6 @@ var inquirer = inquirer || new function () {
                         })
                         ]
                     }),
-                    merger.ui.menuItem("test4", {
-                        text: "Colors",
-                        items: [merger.ui.menuItem("test4_s1", {
-                            text: "Black",
-                        }), merger.ui.menuItem("test4_s2", {
-                            text: "Red",
-                        }), merger.ui.menuItem("test4_s3", {
-                            text: "Green",
-                        }), merger.ui.menuItem("test4_s4", {
-                            text: "Yellow",
-                        }), merger.ui.menuItem("test4_s5", {
-                            text: "To decide by customer",
-                            items: [merger.ui.menuItem("test4_s5_1", {
-                                text: "Accept",
-                            }), merger.ui.menuItem("test4_s5_2", {
-                                text: "Declite",
-                            }), merger.ui.menuItem("test4_s5_3", {
-                                text: "Wait More",
-                                onClick: function () {
-                                    alert("madofaka!");
-                                }
-                            }),
-                            ],
-                        }), merger.ui.menuItem("test4_s6", {
-                            text: "White",
-                        }),
-                        ],
-                    }),
                 ],
                 windows: [merger.ui.window("Wmain", {
                     title: "Error",
