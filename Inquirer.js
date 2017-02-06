@@ -102,7 +102,8 @@ var inquirer = inquirer || new function () {
                     }),
                     ],
                     onClose: function () {
-                        merger.leave();
+                        this.hide();
+                        //merger.leave();
                     },
                     setError: function (message, data) {
                         this.content.Lerror.setText(message);
