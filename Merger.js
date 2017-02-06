@@ -689,7 +689,7 @@ var merger = new function () {
             onmouseenter: undefined,
             onmouseleave: undefined,
             onclick: function () {
-                ui.menu.showMenu = this.parentControl;
+                core.menu.showMenu(this);
             },
             onControlCreate: function () {
                 this.appendChild(line = document.createElement("div"));
