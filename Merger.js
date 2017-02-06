@@ -858,7 +858,7 @@ var merger = new function () {
                 fontSize: "10px",
                 border: "1px solid " + sys.framecolor,
             }
-        }, def), mkTag(def.multiple ? "textarea" : "input"));
+        }, def), core.mkTag(def.multiple ? "textarea" : "input"));
         return c;
     }
 
