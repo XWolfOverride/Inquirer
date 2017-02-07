@@ -234,6 +234,9 @@ var merger = new function () {
                 if (!a)
                     return false;
             }
+            if (selectedApp)
+                for (i in selectedApp.windows)
+                    core.getDesktop().removeChild(selectedApp.windows[i]);
             selectedApp = a;
             menu.sysMenu.setIcon(a.icon ? a.icon : sys.icon);
             menu.sysMenu.setText(a.title ? a.title : a.id);
@@ -282,6 +285,15 @@ var merger = new function () {
                 menu.client.removeChild(menu.client.lastChild);
             for (i in a.menu)
                 menu.client.appendChild(a.menu[i]);
+            for (i in a.windows) {
+                core.getDesktop().appendChild(a.windows[i]);
+                a.windows[i].setVisible(a.windows[i].getVisible());
+            }
+        }
+
+        /** get focused application */
+        function getSelectedAppId() {
+            return selectedApp ? selectedApp.getId() : undefined;
         }
 
         /** Focus application */
@@ -313,6 +325,7 @@ var merger = new function () {
                 create: createApplication,
                 switch: switchApplication,
                 focus: focusApplication,
+                getFocused: getSelectedAppId,
             },
             menu: {
                 showMenu: showMenu,
@@ -385,15 +398,16 @@ var merger = new function () {
             this.onEnter();
     }
 
-    /** Add window to applicaiton */
+    /** Add window to application */
     MergerApplication.prototype.addWindow = function (win) {
         this.windows[win.getId()] = win;
         win.application = win.parentControl = this;
         win.setAttribute("id", this.getId() + "::" + win.getId());
-        core.getDesktop().appendChild(win);
+        if (core.app.getFocused(this.getId()))
+            core.getDesktop().appendChild(win);
     }
 
-    /** Remove window from applicaiton */
+    /** Remove window from application */
     MergerApplication.prototype.removeWindow = function (win) {
         if (!this.windows[win.getId()])
             return;
@@ -480,24 +494,23 @@ var merger = new function () {
             return id;
         }
         c.setTop = function (val) {
-            def.top = val;
+            this.top = val;
             this.style.top = val + "px";
         }
         c.setLeft = function (val) {
-            def.left = val;
+            this.left = val;
             this.style.left = val + "px";
         }
         c.setWidth = function (val) {
-            def.width = val;
+            this.width = val;
             this.style.width = val + "px";
         }
         c.setHeight = function (val) {
-            def.height = val;
+            this.height = val;
             this.style.height = val + "px";
         }
         c.setVisible = function (val) {
             this.style.display = val ? "" : "none";
-            _visible = val;
             if (val && this.onShow)
                 this.onShow();
             if (val && this.onHide)
@@ -532,8 +545,15 @@ var merger = new function () {
                 win = win.parentControl;
             return win;
         }
-        c.getApp = function () {
-            return this.getWindow().parent;
+        c.getApplication = c.getApp = function () {
+            if (this.application)
+                return this.application;
+            var w = this.getWindow(),a=this;
+            if (w)
+                return w.application;
+            while (a && a._type != "app")
+                a = win.parentControl;
+            return a;
         }
         c.merge = function (def) {
             var settings = {};
@@ -643,7 +663,7 @@ var merger = new function () {
                     client.removeChild(client.lastChild);
                 for (i in this.items) {
                     var m = this.items[i];
-                    m.application = this.applicaiton;
+                    m.application = this.application;
                     m.parentControl = this;
                     if (m.items)
                         m.showMoreMark();
@@ -714,9 +734,9 @@ var merger = new function () {
         if (def.width == undefined)
             def.width = 450;
         if (def.top == undefined)
-            def.top = (document.body.clientHeight - def.height) / 2;
+            def.top = document.body ? (document.body.clientHeight - def.height) / 2 : undefined;
         if (def.left == undefined)
-            def.left = (document.body.clientWidth - def.width) / 2;
+            def.left = document.body ? (document.body.clientWidth - def.width) / 2 : undefined;
         if (!def.content)
             def.content = [];
         var w, dw = def.width, dh = def.height;
@@ -810,10 +830,18 @@ var merger = new function () {
                 var close = true;
                 if (this.onClose)
                     close = this.onClose();
-                if (close)
+                if (close === undefined || close)
                     this.hide();
             },
         }, def));
+        w._setVisible = w.setVisible;
+        w.setVisible = function (vis) {
+            this._setVisible(vis);
+            if (this.top === undefined)
+                this.setTop((document.body.clientHeight - this.height) / 2);
+            if (this.left === undefined)
+                this.setLeft((document.body.clientWidth - this.width) / 2);
+        }
         w.client = w.content.client;
         w.titlebar = w.content.titlebar;
         w.content = w.client.content;
@@ -854,11 +882,30 @@ var merger = new function () {
             setText: function (value) {
                 this.value = value;
             },
+            getText: function () {
+                return this.value;
+            },
             style: {
                 fontSize: "10px",
                 border: "1px solid " + sys.framecolor,
             }
         }, def), core.mkTag(def.multiple ? "textarea" : "input"));
+        return c;
+    }
+
+	/**
+	 * CheckBox control creation
+	 */
+    function checkbox(id, def) {
+        var c = control("checkbox", id, core.mkDefinition({
+            setChecked: function (value) {
+                this.checked = value;
+            },
+            getChecked: function () {
+                return this.checked;
+            },
+        }, def), core.mkTag("input"));
+        c.type = "checkbox";
         return c;
     }
 
@@ -928,6 +975,7 @@ var merger = new function () {
             list: list,
             label: label,
             textbox: textbox,
+            checkbox: checkbox,
             button: button,
             picture: picture,
             menuItem: menuItem,

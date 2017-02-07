@@ -61,6 +61,7 @@ var inquirer = inquirer || new function () {
                     title: "Error",
                     width: 400,
                     height: 250,
+                    visible:false,
                     content: [merger.ui.picture("Iico", {
                         src: bugico,
                         top: 0,
@@ -111,7 +112,6 @@ var inquirer = inquirer || new function () {
                     }
                 })],
                 onLoad: function () {
-                    this.windows.Wmain.hide();
                 },
                 onAbout: function () {
                     alert("Pos claro");
