@@ -36,7 +36,7 @@ var mTester = merger.app("mTester", {
             text: "Test",
             items: [merger.ui.menuItem("mt_controls", {
                 text: "Test Controls Dialog",
-                onClick:function(){
+                onClick: function () {
                     this.getApplication().windows.controls.show();
                 }
             })
@@ -57,9 +57,24 @@ var mTester = merger.app("mTester", {
         merger.ui.label("Linfo", {
             top: 20,
             left: 40,
-            width: 400 - 37,
+            width: 200 - 37,
             height: 32,
             text: "Control samples dialog.",
+        }),
+        merger.ui.textbox("sample_textbox", {
+            top: 40,
+            left: 0,
+            width: 200,
+            text: "Textbox",
+        }),
+        merger.ui.checkbox("sample_checkbox", {
+            top: 60,
+            left: 0,
+        }),
+        merger.ui.label("sample_checkbox_label", {
+            top: 60,
+            left: 20,
+            text: "Checkbox",
         }),
         merger.ui.button("Bok", {
             top: 200 - 20,

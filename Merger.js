@@ -898,6 +898,9 @@ var merger = new function () {
 	 */
     function checkbox(id, def) {
         var c = control("checkbox", id, core.mkDefinition({
+            style: {
+                margin: "0",
+            },
             setChecked: function (value) {
                 this.checked = value;
             },
