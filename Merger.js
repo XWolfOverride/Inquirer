@@ -153,7 +153,6 @@ var merger = new function () {
                     fontSize: "14px",
                     lineHeight: "16px",
                     padding: "2px 4px 2px 4px",
-                    color: sys.framecolor,
                 });
                 menu.appendChild(menu.sysMenu);
                 menu.appendChild(menu.client);
@@ -548,7 +547,7 @@ var merger = new function () {
         c.getApplication = c.getApp = function () {
             if (this.application)
                 return this.application;
-            var w = this.getWindow(),a=this;
+            var w = this.getWindow(), a = this;
             if (w)
                 return w.application;
             while (a && a._type != "app")
@@ -612,6 +611,7 @@ var merger = new function () {
                             height: "16px",
                             float: "left",
                             padding: "0 5px 0 0",
+                            filter: "drop-shadow(rgb(255, 255, 255) 0px 0px 1px)",
                         });
                     } else
                         icon.style.display = "";
@@ -887,7 +887,7 @@ var merger = new function () {
             },
             style: {
                 fontSize: "10px",
-                border: "1px solid " + sys.framecolor,
+                border: "1px solid " + sys.color.frame,
             }
         }, def), core.mkTag(def.multiple ? "textarea" : "input"));
         return c;
