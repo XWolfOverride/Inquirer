@@ -1,6 +1,6 @@
 /*
  * Merger Tester Applicaion V 0.2
- * Copyright 2016 XWolfOVerride@gmail.com
+ * Copyright 2016 XWolfOverride@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -51,8 +51,8 @@ var mTester = merger.app("mTester", {
             src: "https://cdn1.iconfinder.com/static/e9bcefc0c5591114fcd0b4b0aff67962/assets/img/extended-library/icon.svg",
             top: 0,
             left: 0,
-            width: 32,
-            height: 32,
+            width: 48,
+            height: 48,
         }),
         merger.ui.label("Linfo", {
             top: 20,
@@ -99,5 +99,6 @@ var mTester = merger.app("mTester", {
     onLoad: function () {
     },
     onAbout: function () {
+        merger.dialogs.messageBox(this, "MergerTester (C)2017 XWolf Override.<br>Merger desktop is a framework that mimiks a classic desktop on a webpage.", "About merger", null, this.icon, 100);
     },
 });

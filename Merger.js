@@ -1,6 +1,6 @@
 /*
  * Merger UI V0.3
- * Copyright 2016 XWolfOVerride@gmail.com
+ * Copyright 2016 XWolfOverride@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -380,6 +380,7 @@ var merger = new function () {
     function MergerApplication(id, def) {
         this.merge({
             _type: "app",
+            icon: sys.icon,
             getId: function () {
                 return id;
             },
@@ -410,6 +411,7 @@ var merger = new function () {
     MergerApplication.prototype.removeWindow = function (win) {
         if (!this.windows[win.getId()])
             return;
+        win.hide();
         delete this.windows[win.getId()];
         core.getDesktop().removeChild(win);
     }
@@ -443,6 +445,16 @@ var merger = new function () {
                 this["do"]();
         }
         controller.check();
+    }
+
+    /**
+     * Generates a random id
+     */
+    function randId(prefix) {
+        var id = Number(Math.round(Math.random() * 0xFFFFF)).toString(16);
+        while (id.length < 5)
+            id = '0' + id;
+        return prefix + "_" + id;
     }
 
 	/**
@@ -842,6 +854,8 @@ var merger = new function () {
             if (this.left === undefined)
                 this.setLeft((document.body.clientWidth - this.width) / 2);
         }
+        def.width = dw;
+        def.height = dh;
         w.client = w.content.client;
         w.titlebar = w.content.titlebar;
         w.content = w.client.content;
@@ -867,6 +881,20 @@ var merger = new function () {
         var c = control("label", id, core.mkDefinition({
             setText: function (text) {
                 this.innerText = text;
+            }
+        }, def));
+        if (def.text !== undefined)
+            c.setText(def.text);
+        return c;
+    }
+
+	/**
+	 * HTML control creation
+	 */
+    function html(id, def) {
+        var c = control("html", id, core.mkDefinition({
+            setHtml: function (text) {
+                this.innerHTML = text;
             }
         }, def));
         if (def.text !== undefined)
@@ -964,6 +992,83 @@ var merger = new function () {
     }
 
 	/**
+	 * Dialog creation tool 
+	 */
+    function dialog(app, id, def, buttons) {
+        if (!def)
+            def = {};
+        def.merge({
+            width: def.width || 300,
+            height: def.height || 300,
+            onClose: function () {
+                app.removeWindow(w);
+            }
+        });
+        var w, i, bt, x = def.width;
+        if (buttons) {
+            def.content = def.content || [];
+            for (i = 0; i < buttons.length; i++)
+                def.content.push(buttons[i]);
+        }
+        w = window(id || randId("dialog"), def);
+        app.addWindow(w);
+        for (i = buttons.length - 1; i >= 0; i--) {
+            bt = buttons[i];
+            x -= bt.offsetWidth;
+            bt.merge({
+                top: def.height - bt.offsetHeight,
+                left: x,
+                _user_onClick: bt.onClick,
+                onClick: function () {
+                    app.removeWindow(w);
+                    if (this._user_onClick)
+                        this._user_onClick();
+                }
+            });
+        }
+        return w;
+    }
+
+	/**
+	 * MessageBox creation tool
+	 */
+    function dialog_messageBox(app, text, title, buttons, icon, height) {
+        var def = {
+            modal: true,
+            title: title,
+            width: icon ? 260 : 200,
+            height: height || 75,
+            content: [
+            ]
+        }, d;
+        if (icon)
+            def.content.push(
+                picture("pIcon", {
+                    top: 0,
+                    left: 0,
+                    width: 48,
+                    height: 48,
+                    src: icon,
+                })
+            );
+        def.content.push(
+            html("htText", {
+                top: 24,
+                left: icon ? 60 : 0,
+                width: 200,
+                html: text,
+            })
+        );
+        if (!buttons || buttons.length == 0) {
+            buttons = [button("btOk", { text: "Ok" })];
+        }
+        d = dialog(app, null, def, buttons);
+        d.show();
+        d.focus();
+        return d;
+    }
+
+	/**
 	 * Merger API
 	 */
     // -- Kernel
@@ -975,14 +1080,19 @@ var merger = new function () {
         // -- UI
         ui: {
             window: window,
+            dialog: dialog,
             list: list,
             label: label,
+            html: html,
             textbox: textbox,
             checkbox: checkbox,
             button: button,
             picture: picture,
             menuItem: menuItem,
             menuSeparator: menuSeparator,
+        },
+        dialogs: {
+            messageBox: dialog_messageBox,
         },
         media: {
             createIcon: core.mkIcon,
