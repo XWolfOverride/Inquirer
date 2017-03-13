@@ -434,15 +434,15 @@ var merger = new function () {
             when: function () {
                 return true;
             },
-            "do": function () {
+            execute: function () {
             },
-            each: undefined
+            each: 20
         }.merge(ctrl);
         controller.check = function () {
             if (!this.when())
                 setTimeout(this.check.bind(this), this.each);
             else
-                this["do"]();
+                this.execute();
         }
         controller.check();
     }
