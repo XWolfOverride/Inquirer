@@ -112,6 +112,6 @@ var mTester = merger.app("mTester", {
     onLoad: function () {
     },
     onAbout: function () {
-        merger.dialogs.messageBox(this, "MergerTester (C)2017 XWolf Override.<br>Merger desktop is a framework that mimiks a classic desktop over a webpage.", "About merger", null, this.icon, 100);
+        merger.dialogs.messageBox(this, "MergerTester ©2017 XWolf Override.<br>Merger desktop is a framework that mimiks a classic desktop over a webpage, and allows development of desktop look and feel web applications. 🐉", "About merger", null, this.icon, 100);
     },
 });

@@ -53,6 +53,9 @@ var inquirer = inquirer || new function () {
                         text: "Tools",
                         items: [merger.ui.menuItem("tool_console", {
                             text: "Console",
+                            onClick: function () {
+                                this.getApp().showConsole();
+                            }
                         })
                         ]
                     }),
@@ -61,7 +64,7 @@ var inquirer = inquirer || new function () {
                     title: "Error",
                     width: 400,
                     height: 250,
-                    visible:false,
+                    visible: false,
                     content: [merger.ui.picture("Iico", {
                         src: bugico,
                         top: 0,
@@ -110,15 +113,126 @@ var inquirer = inquirer || new function () {
                         this.content.Lerror.setText(message);
                         this.content.Tinfo.setText(JSON.stringify(data, null, 2));
                     }
+                }), merger.ui.window("Wconsole", {
+                    title: "Console",
+                    width: 500,
+                    height: 350,
+                    visible: false,
+                    content: [
+                        merger.ui.html("Hconsole", {
+                            top: 0,
+                            left: 0,
+                            width: 500,
+                            height: 310,
+                            style: {
+                                overflow: "scroll",
+                            },
+                        }),
+                        merger.ui.textbox("Tinput", {
+                            top: 315,
+                            left: 0,
+                            width: 500,
+                            height: 35,
+                            multiple: true,
+                            style: {
+                                whiteSpace: "pre",
+                                fontFamily: "Lucida Console, Monospace",
+                                border: "0",
+                                overflow: "scroll",
+                                background: "#EEE",
+                                padding: "5px",
+                            },
+                            onkeydown: function (e) {
+                                if (e.keyCode == 13) {
+                                    this.getWindow().exec(this.getText());
+                                    this.setText("");
+                                    return false;
+                                }
+                            },
+                        }),
+                    ],
+                    onClose: function () {
+                        this.hide();
+                    },
+                    log: function (type, object) {
+                        var row = document.createElement("div");
+                        var head = document.createElement("div");
+                        var clear = document.createElement("div");
+                        var d = document.createElement("div");
+                        row.style.merge({
+                            margin: "0 0 0 13px",
+                        });
+                        head.style.merge({
+                            fontFamily: "Lucida Console, Monospace",
+                            fontWeight: "bold",
+                            float: "left",
+                            margin: "0 0 0 -13px",
+                            width: "13px",
+                        });
+                        d.style.merge({
+                            whiteSpace: "pre-wrap",
+                            float: "right",
+                            fontFamily: "Lucida Console, Monospace",
+                            border: "0",
+                            width: "100%",
+                        });
+                        clear.style.merge({
+                            clear: "both",
+                        });
+                        switch (type) {
+                            case 'i':
+                                d.innerText = object;
+                                head.appendChild(document.createTextNode(">"));
+                                head.style.color = "#88F";
+                                break;
+                            case 'o':
+                                d.innerText = object;
+                                d.style.borderBottom = "1px solid #EEE";
+                                head.appendChild(document.createTextNode("<"));
+                                head.style.color = "#DDD";
+                                break;
+                            case 'e':
+                                d.innerText = object;
+                                head.appendChild(document.createTextNode("!"));
+                                head.style.color = "#F88";
+                                d.style.background = "#FEE";
+                                head.style.background = "#FEE";
+                                break;
+                        }
+                        d.data = object;
+                        row.appendChild(head);
+                        row.appendChild(d);
+                        row.appendChild(clear);
+                        this.content.Hconsole.appendChild(row);
+                        this.content.Hconsole.scrollTop = this.content.Hconsole.scrollHeight;
+                    },
+                    exec: function (code) {
+                        if (code == null || typeof code != "string" || code.length < 1)
+                            return;
+                        var err;
+                        this.log('i', code);
+                        try {
+                            this.log('o', eval('(' + code + ')'));
+                        } catch (err) {
+                            this.log('e', err);
+                        }
+                    },
+                    setError: function (message, data) {
+                        this.content.Lerror.setText(message);
+                        this.content.Tinfo.setText(JSON.stringify(data, null, 2));
+                    }
                 })],
                 onLoad: function () {
                 },
                 onAbout: function () {
-                    alert("Pos claro");
+                    merger.dialogs.messageBox(this, "Inquirer ©2016-2017 XWolf Override.<br>Debugger application layer for web pages. Useful for embedded browser debugging", "About Inquirer", null, this.icon, 100);
                 },
                 showError: function (message, data) {
                     this.windows.Wmain.setError(message, data);
                     this.windows.Wmain.show();
+                },
+                showConsole: function () {
+                    this.windows.Wconsole.show();
                 },
                 log: function (info) {
 
