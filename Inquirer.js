@@ -129,11 +129,11 @@ var inquirer = inquirer || new function () {
                             },
                         }),
                         merger.ui.textbox("Tinput", {
-                            top: 315,
-                            left: 0,
-                            width: 500,
-                            height: 35,
-                            multiple: true,
+                            top: 330,
+                            left: -5,
+                            width: 500 + 10,
+                            height: 25,
+                            //multiple: true,
                             style: {
                                 whiteSpace: "pre",
                                 fontFamily: "Lucida Console, Monospace",
@@ -184,6 +184,7 @@ var inquirer = inquirer || new function () {
                                 d.innerText = object;
                                 head.appendChild(document.createTextNode(">"));
                                 head.style.color = "#88F";
+                                d.style.paddingBottom = "3px";
                                 break;
                             case 'o':
                                 d.innerText = object;
