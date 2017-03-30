@@ -45,7 +45,7 @@ var mTester = merger.app("mTester", {
     ],
     windows: [merger.ui.window("controls", {
         title: "Control Dialog",
-        width: 200,
+        width: 400,
         height: 200,
         content: [merger.ui.picture("Iico", {
             src: "https://cdn1.iconfinder.com/static/e9bcefc0c5591114fcd0b4b0aff67962/assets/img/extended-library/icon.svg",
@@ -56,29 +56,42 @@ var mTester = merger.app("mTester", {
         }),
         merger.ui.label("Linfo", {
             top: 20,
-            left: 40,
-            width: 200 - 37,
-            height: 32,
-            text: "Control samples dialog.",
+            left: 55,
+            width: 95,
+            height: 25,
+            text: "Control samples.",
         }),
         merger.ui.textbox("sample_textbox", {
-            top: 40,
+            top: 55,
             left: 0,
-            width: 200,
+            width: 150,
             text: "Textbox",
         }),
         merger.ui.checkbox("sample_checkbox", {
-            top: 60,
+            top: 75,
             left: 0,
         }),
         merger.ui.label("sample_checkbox_label", {
-            top: 60,
+            top: 75,
             left: 20,
             text: "Checkbox",
         }),
+        merger.ui.dropdown("sample_dropdown", {
+            top: 95,
+            left: 0,
+            width: 150,
+            items: [{ key: "clRed", value: "Red" }, { key: "clBlue", value: "Blue" }, { key: "clGreen", value: "Green" }],
+        }),
+        merger.ui.list("sample_list", {
+            top: 120,
+            left: 0,
+            width: 150,
+            height: 80,
+            items: [{ key: "clRed", value: "Red" }, { key: "clBlue", value: "Blue" }, { key: "clGreen", value: "Green" }],
+        }),
         merger.ui.button("Bok", {
             top: 200 - 20,
-            left: 200 - 35,
+            left: 400 - 35,
             width: 35,
             height: 20,
             text: "Ok",
@@ -99,6 +112,6 @@ var mTester = merger.app("mTester", {
     onLoad: function () {
     },
     onAbout: function () {
-        merger.dialogs.messageBox(this, "MergerTester (C)2017 XWolf Override.<br>Merger desktop is a framework that mimiks a classic desktop on a webpage.", "About merger", null, this.icon, 100);
+        merger.dialogs.messageBox(this, "MergerTester (C)2017 XWolf Override.<br>Merger desktop is a framework that mimiks a classic desktop over a webpage.", "About merger", null, this.icon, 100);
     },
 });

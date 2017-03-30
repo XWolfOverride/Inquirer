@@ -567,20 +567,22 @@ var merger = new function () {
             return a;
         }
         c.merge = function (def) {
-            var settings = {};
-            for (var key in def) {
-                var mdata = def[key];
-                if (typeof mdata == "function")
-                    c[key] = def[key];
-                else {
+            var settings = {}, obj, key, mdata;
+            for (key in def) {
+                mdata = def[key];
+                if (typeof mdata == "function") {
+                    if (this[key])
+                        def[key].super=this[key].bind(this);
+                    this[key] = def[key];
+                } else {
                     var fname = "set" + key[0].toUpperCase() + key.substring(1);
-                    var fnc = c[fname];
+                    var fnc = this[fname];
                     settings[key] = {
                         f: (fnc && typeof fnc == "function") ? fnc.bind(this) : null, d: mdata
                     };
                 }
             }
-            for (var key in settings) {
+            for (key in settings) {
                 var o = settings[key];
                 if (o.f)
                     o.f(o.d);
@@ -983,12 +985,43 @@ var merger = new function () {
     }
 
 	/**
+	 * DropDown control creation
+	 */
+    function dropdown(id, def, listMode) {
+        if (listMode)
+            def.size=2;
+        var c = control(listMode ? "list" : "dropdown", id, core.mkDefinition({
+            setItems: function (items) {
+                this.clear();
+                this.addAll(items);
+            },
+            clear: function () {
+                while (this.options.length > 0)
+                    this.remove(this.options.length - 1);
+            },
+            add: function (item) {
+                if (!(item instanceof Option)) {
+                    if (typeof item == "object")
+                        item = new Option(item.value, item.key);
+                    else
+                        item = new Option(item, item);
+                }
+                this.add.super(item);
+            },
+            addAll: function (items) {
+                var i;
+                for (i in items)
+                    this.add(items[i]);
+            }
+        }, def), core.mkTag("select"));
+        return c;
+    }
+
+	/**
 	 * List control creation
 	 */
     function list(id, def) {
-        var c = control("list", id, def);
-        c.style.border = "1px solid red";
-        return c;
+        return dropdown(id, def, true)
     }
 
 	/**
@@ -1081,6 +1114,7 @@ var merger = new function () {
         ui: {
             window: window,
             dialog: dialog,
+            dropdown: dropdown,
             list: list,
             label: label,
             html: html,
