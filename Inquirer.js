@@ -175,7 +175,7 @@ var inquirer = inquirer || new function () {
                     },
                     setError: function (message, data) {
                         this.content.Lerror.setText(message);
-                        this.content.Tinfo.setText(JSON.stringify(data, null, 2));
+                        this.content.Tinfo.setText(data);
                     }
                 }), merger.ui.window("Wconsole", {
                     title: "Console",
@@ -295,10 +295,6 @@ var inquirer = inquirer || new function () {
                         var k;
                         for (k in arguments)
                             this.log('e', arguments[k]);
-                    },
-                    setError: function (message, data) {
-                        this.content.Lerror.setText(message);
-                        this.content.Tinfo.setText(JSON.stringify(data, null, 2));
                     }
                 })],
                 onLoad: function () {
@@ -306,8 +302,12 @@ var inquirer = inquirer || new function () {
                 onAbout: function () {
                     merger.dialogs.messageBox(this, "Inquirer v" + VERSION + " ©2016-2017 XWolf Override.<br>Debugger application layer for web pages. Useful for embedded browser debugging", "About Inquirer", null, this.icon, 100);
                 },
-                showError: function (message, data) {
-                    this.windows.Wmain.setError(message, data);
+                showError: function (err) {
+                    if (err instanceof Error) {
+                        this.windows.Wmain.setError(err.message, err.stack);
+                    } else {
+                        this.windows.Wmain.setError(err.message, JSON.stringify(err, null, 2));
+                    }
                     this.windows.Wmain.show();
                 },
                 showConsole: function () {
