@@ -32,6 +32,59 @@ var inquirer = inquirer || new function () {
     var inq = this;
     var inqapp;
 
+    // Tools
+
+    function objectResume(obj) {
+        var r, k, v;
+        if (obj === null)
+            return "<null>";
+        if (obj === undefined)
+            return "<undefined>";
+        switch (typeof obj) {
+            case "string":
+                if (obj.length < 200)
+                    return '"' + obj + '"';
+                else
+                    return '"' + obj.substr(0, 200) + "...";
+            case "function":
+                return "function";
+            case "object":
+                r = "";
+                if (obj instanceof HTMLElement)
+                    r += "<" + obj.tagName + ">:: ";
+                else if (obj instanceof HTMLDocument)
+                    r += "DOCUMENT:: ";
+                else if (obj instanceof Window)
+                    r += "WINDOW:: ";
+                r += "{\n";
+                for (k in obj) {
+                    r += k + ":" + objectResume(obj[k]) + ",\n";
+                    if (r.length > 500) {
+                        r += " ...";
+                        break;
+                    }
+                }
+                r += "}";
+                return r;
+            default:
+                return "" + obj;
+        }
+    }
+
+    function objectResumeLink(obj) {
+        var a = document.createElement("a");
+        a.href = "#";
+        a.onclick = function () {
+            return false;
+        }
+        a.appendChild(document.createTextNode(objectResume(obj)));
+        a.style.merge({
+            color: "black",
+            textDecoration: "none"
+        });
+        return a;
+    }
+
     // Methods
 
     function getApp() {
@@ -123,7 +176,7 @@ var inquirer = inquirer || new function () {
                             top: 0,
                             left: 0,
                             width: 500,
-                            height: 310,
+                            height: 330,
                             style: {
                                 overflow: "scroll",
                             },
@@ -187,12 +240,14 @@ var inquirer = inquirer || new function () {
                                 d.style.paddingBottom = "3px";
                                 break;
                             case 'o':
-                                d.innerText = object;
+                                window.console.info(object);
+                                d.appendChild(objectResumeLink(object));
                                 d.style.borderBottom = "1px solid #EEE";
                                 head.appendChild(document.createTextNode("<"));
                                 head.style.color = "#DDD";
                                 break;
                             case 'e':
+                                window.console.error(object);
                                 d.innerText = object;
                                 head.appendChild(document.createTextNode("!"));
                                 head.style.color = "#F88";
@@ -210,13 +265,15 @@ var inquirer = inquirer || new function () {
                     exec: function (code) {
                         if (code == null || typeof code != "string" || code.length < 1)
                             return;
-                        var err;
+                        var err, obj;
                         this.log('i', code);
                         try {
-                            this.log('o', eval('(' + code + ')'));
+                            obj = eval('(' + code + ')');
                         } catch (err) {
                             this.log('e', err);
+                            return;
                         }
+                        this.log('o', obj);
                     },
                     setError: function (message, data) {
                         this.content.Lerror.setText(message);
@@ -300,29 +357,17 @@ var inquirer = inquirer || new function () {
 
     }
     // Publish
-    /** Open Inquirer environment when a new unhandled error happen */
-    this.autoShow = true;
 
-    /** Enters environment */
-    this.show = show;
-
-    /** Exit environent */
-    this.hide = hide;
-
-    /** Hook the webpage to control errors (Automatically hooked) */
-    this.hook = hook;
-
-    /** Collect an error and if autoShow is true enters environment */
-    this.error = error;
-
-    /** Enters environment and open variable inspector */
-    this.inspect = inspect;
-
-    /** Enters environment and open inquirer console */
-    this.console = console;
-
-    /** Log an object into the console */
-    this.log = log;
+    this.merge({
+        autoShow: true,     // Open Inquirer environment when a new unhandled error happen
+        show: show,         // Enters environment
+        hide: hide,         // Exit environent
+        hook: hook,         // Hook the webpage to control errors (Automatically hooked)
+        error: error,       // Collect an error and if autoShow is true enters environment
+        inspect: inspect,   // Enters environment and open variable inspector
+        console: console,   // Enters environment and open inquirer console
+        log: log,           // Log an object into the console
+    });
 
     // Hook the page now
     hook();
