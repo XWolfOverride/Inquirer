@@ -71,9 +71,25 @@ var inquirer = inquirer || new function () {
         var a = document.createElement("a");
         a.href = "#";
         a.onclick = function () {
+            inq.inspect(obj);
             return false;
         }
         a.appendChild(document.createTextNode(objectResume(obj)));
+        a.style.merge({
+            color: "black",
+            textDecoration: "none"
+        });
+        return a;
+    }
+
+    function errorLink(obj) {
+        var a = document.createElement("a");
+        a.href = "#";
+        a.onclick = function () {
+            getApp().showError(obj);
+            return false;
+        }
+        a.appendChild(document.createTextNode(obj));
         a.style.merge({
             color: "black",
             textDecoration: "none"
@@ -181,6 +197,7 @@ var inquirer = inquirer || new function () {
                             left: -5,
                             width: 500 + 10,
                             height: 25,
+                            placeholder: "javascript code here",
                             //multiple: true,
                             style: {
                                 whiteSpace: "pre",
@@ -241,7 +258,8 @@ var inquirer = inquirer || new function () {
                                 head.style.color = "#DDD";
                                 break;
                             case 'e':
-                                d.innerText = object;
+                                d.appendChild(errorLink(object));
+                                //d.innerText = object;
                                 head.appendChild(document.createTextNode("!"));
                                 head.style.color = "#F88";
                                 d.style.background = "#FEE";
@@ -286,7 +304,7 @@ var inquirer = inquirer || new function () {
                 onLoad: function () {
                 },
                 onAbout: function () {
-                    merger.dialogs.messageBox(this, "Inquirer v"+VERSION+" ©2016-2017 XWolf Override.<br>Debugger application layer for web pages. Useful for embedded browser debugging", "About Inquirer", null, this.icon, 100);
+                    merger.dialogs.messageBox(this, "Inquirer v" + VERSION + " ©2016-2017 XWolf Override.<br>Debugger application layer for web pages. Useful for embedded browser debugging", "About Inquirer", null, this.icon, 100);
                 },
                 showError: function (message, data) {
                     this.windows.Wmain.setError(message, data);
@@ -294,9 +312,6 @@ var inquirer = inquirer || new function () {
                 },
                 showConsole: function () {
                     this.windows.Wconsole.show();
-                },
-                log: function (info) {
-
                 }
             });
         return inqapp;
@@ -314,11 +329,12 @@ var inquirer = inquirer || new function () {
     function hookOnError() {
         var formerOnError = window.onerror;
         window.onerror = function (message, source, lineno, colno, err) {
-            error.bind(inq)(message, {
-                "source": source,
-                "at": lineno + ":" + colno,
-                "error": err,
-                "raw": arguments
+            inq.error({
+                message: message,
+                source: source,
+                at: lineno + ":" + colno,
+                error: err,
+                raw: arguments
             });
             if (formerOnError)
                 formerOnError.apply(window, arguments);
@@ -370,15 +386,15 @@ var inquirer = inquirer || new function () {
         hookConsole();
     }
 
-    function error(message, data) {
-        getApp().log({ error: true, data: { message: message, data: data } });
+    function error(error) {
+        getApp().windows.Wconsole.writeError(error);
         if (this.autoShow) {
-            getApp().showError(message, data);
+            getApp().showError(error);
             show();
         }
     }
 
-    function inspect() {
+    function inspect(object) {
 
     }
 
@@ -405,8 +421,7 @@ var inquirer = inquirer || new function () {
 
     // Hook the page now
     hook();
-
     window.addEventListener("load", function () {
-        getApp();
+        getApp().windows.Wconsole.write("Inquirer " + VERSION + " console.");
     })
 }();
