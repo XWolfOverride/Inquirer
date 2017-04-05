@@ -25,15 +25,10 @@ var inquirer = inquirer || new function () {
     var icon = "data:image/gif;base64,R0lGODlhIAAgAKECADIyMjMzM////////yH5BAEKAAIALAAAAAAgACAAAAJulI8Zke2PFoC0LlZzW7qf633XGGHeiJqcaKWgsQov5JLvTNeYq+kM36vBUJNgaujDiVDIpLK58ylIiiU0NjWVZscHgAuUUXPOpfbhjD1bwmFIrHsvv+3Qrd4Byzda7N7h9zclmEOIFmgolgj4VgAAOw==",
         bugico = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAWlBMVEUkJSMuMC01NzQ+Pz1HSEZPUU5YWldfYV5pa2h6e3iOkI2YmpeipKGpq6ifwFWqxma4urezzHa50YHJy8jC1pLL3aLS4K3a3NnZ5rvo6+fn8NXv8+L19/D9//y9fxQqAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+EBBAwFN28edE4AAABVaVRYdENvbW1lbnQAAAAAAENvcHlyaWdodCBJTkNPUlMgR21iSCAod3d3Lmljb25leHBlcmllbmNlLmNvbSkgLSBVbmxpY2Vuc2VkIHByZXZpZXcgaW1hZ2VYrophAAAC6UlEQVRYw+2X2barIAxA0U5qK2jFAor//5uXSUUS2q5z1n07vNhC2JCYSbL8cpA/wAeAGswQPwc0xI3qO4BWcPVs95/gvNYQIAhpgGBtATcw3RLSpgBtRYdU8oLeQNhZlQCUnazDny7YrfM2uK8Hh+fDTopUBavuOfwuH+4xlB5QdP5vEU69xdfaAMOONT8fQg012UY1CNGuV1HxraK3UGw6XEhm+BveYw0igNWh3OyJD6fD1WqF+EG7glUeYJdFEWsQe6I1WTG8BdjVMn6JB8DNvXTjY12R2X9HnDMCqNPqSxmCebl6UWatFHgwmdtdl4XzoGcyrHav3rp3IXLRqEq9SEqf5qQq3X8xao+UjstyEvlwNgZglNLePMX9FJ1e203cLDEn9CYfvKgdTLqgaWsDKa6NM4xkbol/SCheyiBek4+8zh04yz4sUP0WMNN9sHHywrNk0bR8C+jpYbDcXBZAEWGWTM5vAHMiSzGAzAH8i4aAdM46GgSI7lrAw5zJKdSrvLRJSmtc9tWprNUXm6z3akH29N0sE5CdELsYI7hse90BPvt1OABOjiFlXFeA338WNpCgxSGAL9qnzUo7gK+ANp+Cl0BfC0J9bmXTEEioHi4fc+S2GUAgNAZQ7zWJI7cN8QkAPrvfDGDYaxrHZMcMwFW4u7VBV3fBKaBs/wZgNrZJLEB1WUavTDBN3wFeWcD8HUDmwxkDPCkWYWg4KyjMQEKyhtVoYVGnFhoBA0hTdwQEmLJUwYTA0BzRuDKVAEzRNS2M/AwYF20KX6HTjBQcugc5jYELtD74j4C1b5kBAGaIQ0dHou7ihnhjCuBrAiqOABHqPwiIWSNePEQ6kEgDhYTUNCNRoEmaVF3jsvXEcSmU0zG97D10GQOcBu3eJjAMwOZjt9ylAIEF9ktiMWg9IbTmZLvT/dirhI08ZLTx2BaYNqxKHAl+2EgbWtyatJcafAyJbz555rHvOePTb77atP77cv3/gH8Wkk7NciByTQAAAABJRU5ErkJggg==";
 
-
     // Locals
-
-    var formerOnError;
-    var inq = this;
-    var inqapp;
+    var inq = this, inqapp;
 
     // Tools
-
     function objectResume(obj) {
         var r, k, v;
         if (obj === null)
@@ -86,7 +81,6 @@ var inquirer = inquirer || new function () {
     }
 
     // Methods
-
     function getApp() {
         if (!inqapp)
             inqapp = merger.app("inquirer", {
@@ -240,14 +234,12 @@ var inquirer = inquirer || new function () {
                                 d.style.paddingBottom = "3px";
                                 break;
                             case 'o':
-                                window.console.info(object);
                                 d.appendChild(objectResumeLink(object));
                                 d.style.borderBottom = "1px solid #EEE";
                                 head.appendChild(document.createTextNode("<"));
                                 head.style.color = "#DDD";
                                 break;
                             case 'e':
-                                window.console.error(object);
                                 d.innerText = object;
                                 head.appendChild(document.createTextNode("!"));
                                 head.style.color = "#F88";
@@ -270,10 +262,20 @@ var inquirer = inquirer || new function () {
                         try {
                             obj = eval('(' + code + ')');
                         } catch (err) {
-                            this.log('e', err);
+                            window.console.error(err);
                             return;
                         }
-                        this.log('o', obj);
+                        window.console.log(obj);
+                    },
+                    write: function () {
+                        var k;
+                        for (k in arguments)
+                            this.log('o', arguments[k]);
+                    },
+                    writeError: function () {
+                        var k;
+                        for (k in arguments)
+                            this.log('e', arguments[k]);
                     },
                     setError: function (message, data) {
                         this.content.Lerror.setText(message);
@@ -307,9 +309,9 @@ var inquirer = inquirer || new function () {
         getApp().windows.Wmain.close();
     }
 
-    function hook() {
-        // On error code controller
-        formerOnError = window.onerror;
+    // On error hook
+    function hookOnError() {
+        var formerOnError = window.onerror;
         window.onerror = function (message, source, lineno, colno, err) {
             error.bind(inq)(message, {
                 "source": source,
@@ -317,24 +319,54 @@ var inquirer = inquirer || new function () {
                 "error": err,
                 "raw": arguments
             });
-            formerOnError;
+            if (formerOnError)
+                formerOnError.apply(window, arguments);
         }
-        // Konami code controller
-        var ckc = (function (callback) {
-            var kc = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65]; // Konami code
-            var kcindex = 0;
-            return function (e) {
-                if (e.keyCode == kc[kcindex])
-                    kcindex++;
-                else
-                    kcindex = 0;
-                if (kcindex == kc.length)
-                    callback();
-            }
-        })(function () {
-            this.show();
-        }.bind(this));
-        document.addEventListener("keydown", ckc, false);
+    }
+
+    // Konami code hook
+    function hookKonamiCode() {
+        var kc = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65], kcindex = 0 // Konami code
+        document.addEventListener("keydown", function (e) {
+            if (e.keyCode == kc[kcindex])
+                kcindex++;
+            else
+                kcindex = 0;
+            if (kcindex == kc.length)
+                inquirer.show();
+        }, false);
+    }
+
+    // Console hook
+    function hookConsole() {
+        var wcon = getApp().windows.Wconsole;
+        if (!window.console)
+            window.console = {};
+        function consoleOverride(method, funct) {
+            var old = window.console[method];
+            window.console[method] = function () {
+                funct.apply(this, arguments);
+                if (old)
+                    old.apply(this, arguments);
+            };
+            window.console[method].old = old;
+        }
+        consoleOverride("log", function () {
+            wcon.write.apply(wcon, arguments);
+        })
+        consoleOverride("debug", function () {
+            wcon.write.apply(wcon, arguments);
+        })
+        consoleOverride("error", function () {
+            wcon.writeError.apply(wcon, arguments);
+        })
+    }
+
+    // Install hooks
+    function hook() {
+        hookOnError();
+        hookKonamiCode();
+        hookConsole();
     }
 
     function error(message, data) {
@@ -350,14 +382,15 @@ var inquirer = inquirer || new function () {
     }
 
     function console() {
-
+        getApp().showConsole();
+        show();
     }
 
     function log() {
-
+        getApp().windows.Wconsole.write.apply(getApp().windows.Wconsole, arguments);
     }
-    // Publish
 
+    // Publish
     this.merge({
         autoShow: true,     // Open Inquirer environment when a new unhandled error happen
         show: show,         // Enters environment
