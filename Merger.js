@@ -104,6 +104,7 @@ var merger = new function () {
             if (!menu) {
                 menu = core.mkTag("div");
                 menu.setAttribute("id", "Merger::Menu");
+                menu._zLayer = 10;
                 getDesktop().appendChild(menu);
                 menu.style.merge({
                     position: "absolute",
@@ -572,7 +573,7 @@ var merger = new function () {
                 mdata = def[key];
                 if (typeof mdata == "function") {
                     if (this[key])
-                        def[key].super=this[key].bind(this);
+                        def[key].super = this[key].bind(this);
                     this[key] = def[key];
                 } else {
                     var fname = "set" + key[0].toUpperCase() + key.substring(1);
@@ -595,6 +596,25 @@ var merger = new function () {
                 position: "absolute",
             },
             anchor: { top: true, right: false, bottom: false, left: true },
+            bringToFront: function () {
+                var p, els, i, l;
+                p = this.parentNode;
+                if (!p)
+                    return;
+                els = [].slice.apply(p.children, [0]);
+                els.sort(function (a, b) {
+                    if (a == this)
+                        return 1;
+                    if (b == this)
+                        return -1;
+                    return Number(a.style.zIndex) - Number(b.style.zIndex);
+                }.bind(this))
+                for (i in els) {
+                    l = els[i]._zLayer || 0;
+                    els[i].style.zIndex = Number(i) + 1 + (l * 100000);
+                }
+            }
+
         }, def));
         if (c.onControlCreate)
             c.onControlCreate();
@@ -658,7 +678,8 @@ var merger = new function () {
                             border: "1px solid " + sys.color.frame,
                             fontFamily: "Arial",
                             fontSize: "14px",
-                        }
+                        },
+                        _zLayer: 2,
                     });
                     core.getDesktop().appendChild(client);
                 }
@@ -807,6 +828,7 @@ var merger = new function () {
                 this._textNode.textContent = title;
             },
             onmousedown: function (e) {
+                //this.parentControl.bringToFront();
                 DragNDrop.drag(this.parentControl, e.offsetX, e.offsetY);
             },
             onmouseup: function (e) {
@@ -834,6 +856,16 @@ var merger = new function () {
                 def.top = val;
                 this.style.top = val + "px";
             },
+            setVisible: function (vis) {
+                arguments.callee.super(vis);
+                if (vis) {
+                    this.bringToFront();
+                    if (this.top === undefined)
+                        this.setTop((document.body.clientHeight - this.height) / 2);
+                    if (this.left === undefined)
+                        this.setLeft((document.body.clientWidth - this.width) / 2);
+                }
+            },
             style: {
                 backgroundColor: "white",
                 border: "1px solid " + sys.color.frame,
@@ -847,15 +879,10 @@ var merger = new function () {
                 if (close === undefined || close)
                     this.hide();
             },
+            onmousedown: function () {
+                this.bringToFront();
+            },
         }, def));
-        w._setVisible = w.setVisible;
-        w.setVisible = function (vis) {
-            this._setVisible(vis);
-            if (this.top === undefined)
-                this.setTop((document.body.clientHeight - this.height) / 2);
-            if (this.left === undefined)
-                this.setLeft((document.body.clientWidth - this.width) / 2);
-        }
         def.width = dw;
         def.height = dh;
         w.client = w.content.client;
@@ -989,7 +1016,7 @@ var merger = new function () {
 	 */
     function dropdown(id, def, listMode) {
         if (listMode)
-            def.size=2;
+            def.size = 2;
         var c = control(listMode ? "list" : "dropdown", id, core.mkDefinition({
             setItems: function (items) {
                 this.clear();
