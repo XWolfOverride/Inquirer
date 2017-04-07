@@ -208,14 +208,54 @@ var inquirer = inquirer || new function () {
                                 padding: "5px",
                             },
                             onkeydown: function (e) {
-                                if (e.keyCode == 13) {
-                                    this.getWindow().exec(this.getText());
-                                    this.setText("");
-                                    return false;
+                                var t, stop;
+                                switch (e.keyCode) {
+                                    case 13:
+                                        this.getWindow().exec(this.getText());
+                                        t = "";
+                                        stop = true;
+                                        break;
+                                    case 38:
+                                        t = this.getWindow().conhis.up();
+                                        stop = true;
+                                        break;
+                                    case 40:
+                                        t = this.getWindow().conhis.down();
+                                        stop = true;
+                                        break;
                                 }
+                                if (t != undefined) {
+                                    this.setText(t);
+                                }
+                                if (stop)
+                                    return false;
                             },
                         }),
                     ],
+                    conhis: {
+                        data: [],
+                        sel: 0,
+                        add: function (code) {
+                            var idx = this.data.indexOf(code);
+                            if (idx >= 0)
+                                this.data.splice(idx, 1);
+                            this.data.push(code);
+                            this.sel = this.data.length;
+                        },
+                        up: function () {
+                            if (this.sel > 0)
+                                this.sel--;
+                            return this.data[this.sel];
+                        },
+                        down: function () {
+                            if (this.sel < this.data.length)
+                                this.sel++;
+                            else return;
+                            if (this.sel == this.data.length)
+                                return "";
+                            return this.data[this.sel];
+                        }
+                    },
                     onClose: function () {
                         this.hide();
                     },
@@ -276,6 +316,7 @@ var inquirer = inquirer || new function () {
                     exec: function (code) {
                         if (code == null || typeof code != "string" || code.length < 1)
                             return;
+                        this.conhis.add(code);
                         var err, obj;
                         this.log('i', code);
                         try {
