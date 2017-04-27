@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>inquirer Tester</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -34,6 +35,9 @@
             rimg.style.height = ri.h * isiz;
             rimg.style.display = isiz === 0 ? "none" : "";
         }
+        function doException() {
+            throw new Error("Error test");
+        }
     </script>
     <style>
         #rimg {
@@ -44,6 +48,7 @@
 
 <body>
     <button onclick="1=1">Error</button><br/>
+    <button onclick="doException()">Exception</button><br/>
     <button onclick="inquirer.show()">Call Inquirer</button><br/>
     <button onclick="inquirer.inspect(testData)">Inspector</button><br/>
     <button onclick="inquirer.console()">Console</button><br/>

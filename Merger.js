@@ -828,7 +828,8 @@ var merger = new function () {
                 this._textNode.textContent = title;
             },
             onmousedown: function (e) {
-                //this.parentControl.bringToFront();
+                if (e.offsetY < 1)
+                    return;
                 DragNDrop.drag(this.parentControl, e.offsetX, e.offsetY);
             },
             onmouseup: function (e) {
