@@ -22,15 +22,15 @@
 
 var mTester = merger.app("mTester", {
     title: "Merger Tester Application",
-    appMenu: [
-        merger.ui.menuItem("app_close", {
-            text: "Close Merger Desktop",
-            icon: merger.media.closeIcon(),
-            onClick: function () {
-                merger.leave();
-            }
-        }),
-    ],
+    // appMenu: [
+    //     merger.ui.menuItem("app_close", {
+    //         text: "Close Merger Desktop",
+    //         icon: merger.media.closeIcon(),
+    //         onClick: function () {
+    //             merger.leave();
+    //         }
+    //     }),
+    // ],
     menu: [
         merger.ui.menuItem("m_test", {
             text: "Test",
@@ -48,7 +48,7 @@ var mTester = merger.app("mTester", {
         width: 400,
         height: 200,
         content: [merger.ui.picture("Iico", {
-            src: "https://cdn1.iconfinder.com/static/e9bcefc0c5591114fcd0b4b0aff67962/assets/img/extended-library/icon.svg",
+            src: "http://simpleicon.com/wp-content/uploads/rocket.svg",
             top: 0,
             left: 0,
             width: 48,

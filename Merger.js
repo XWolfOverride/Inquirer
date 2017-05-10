@@ -28,7 +28,7 @@ var merger = new function () {
         sys = { // Configuration
             _type: "system",
             icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
-            ver: "0.3b",
+            ver: "0.3c",
             color: {
                 frame: "teal", //"orange"
                 client: "white",
@@ -280,6 +280,17 @@ var merger = new function () {
                     m.parentControl = menu.sysMenu;
                 }
             }
+            if (a.allowDefaultClose)
+                menu.sysMenu.items.push(
+                    m = merger.ui.menuItem("sys_closedesktop", {
+                        icon: merger.media.closeIcon(),
+                        text: "Close",
+                        _app: ax,
+                        onClick: function () {
+                            merger.leave();
+                        }
+                    })
+                );
             // Application menu
             while (menu.client.lastChild)
                 menu.client.removeChild(menu.client.lastChild);
@@ -382,6 +393,7 @@ var merger = new function () {
         this.merge({
             _type: "app",
             icon: sys.icon,
+            allowDefaultClose: true,
             getId: function () {
                 return id;
             },

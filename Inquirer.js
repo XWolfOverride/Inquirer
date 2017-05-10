@@ -109,15 +109,15 @@ var inquirer = inquirer || new function () {
             inqapp = merger.app("inquirer", {
                 title: "Inquirer",
                 icon: icon,
-                appMenu: [
-                    merger.ui.menuItem("app_close", {
-                        text: "Close",
-                        icon: merger.media.closeIcon(),
-                        onClick: function () {
-                            merger.leave();
-                        }
-                    }),
-                ],
+                // appMenu: [
+                //     merger.ui.menuItem("app_close", {
+                //         text: "Close",
+                //         icon: merger.media.closeIcon(),
+                //         onClick: function () {
+                //             merger.leave();
+                //         }
+                //     }),
+                // ],
                 menu: [
                     merger.ui.menuItem("app_tools", {
                         text: "Tools",
@@ -475,6 +475,7 @@ var inquirer = inquirer || new function () {
 
     // Publish
     this.merge({
+        version: VERSION,
         autoShow: true,     // Open Inquirer environment when a new unhandled error happen
         show: show,         // Enters environment
         hide: hide,         // Exit environent
