@@ -24,7 +24,9 @@ var inquirer = inquirer || new function () {
 
     var icon = "data:image/gif;base64,R0lGODlhIAAgAKECADIyMjMzM////////yH5BAEKAAIALAAAAAAgACAAAAJulI8Zke2PFoC0LlZzW7qf633XGGHeiJqcaKWgsQov5JLvTNeYq+kM36vBUJNgaujDiVDIpLK58ylIiiU0NjWVZscHgAuUUXPOpfbhjD1bwmFIrHsvv+3Qrd4Byzda7N7h9zclmEOIFmgolgj4VgAAOw==", //
         bugico = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAWlBMVEUkJSMuMC01NzQ+Pz1HSEZPUU5YWldfYV5pa2h6e3iOkI2YmpeipKGpq6ifwFWqxma4urezzHa50YHJy8jC1pLL3aLS4K3a3NnZ5rvo6+fn8NXv8+L19/D9//y9fxQqAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+EBBAwFN28edE4AAABVaVRYdENvbW1lbnQAAAAAAENvcHlyaWdodCBJTkNPUlMgR21iSCAod3d3Lmljb25leHBlcmllbmNlLmNvbSkgLSBVbmxpY2Vuc2VkIHByZXZpZXcgaW1hZ2VYrophAAAC6UlEQVRYw+2X2barIAxA0U5qK2jFAor//5uXSUUS2q5z1n07vNhC2JCYSbL8cpA/wAeAGswQPwc0xI3qO4BWcPVs95/gvNYQIAhpgGBtATcw3RLSpgBtRYdU8oLeQNhZlQCUnazDny7YrfM2uK8Hh+fDTopUBavuOfwuH+4xlB5QdP5vEU69xdfaAMOONT8fQg012UY1CNGuV1HxraK3UGw6XEhm+BveYw0igNWh3OyJD6fD1WqF+EG7glUeYJdFEWsQe6I1WTG8BdjVMn6JB8DNvXTjY12R2X9HnDMCqNPqSxmCebl6UWatFHgwmdtdl4XzoGcyrHav3rp3IXLRqEq9SEqf5qQq3X8xao+UjstyEvlwNgZglNLePMX9FJ1e203cLDEn9CYfvKgdTLqgaWsDKa6NM4xkbol/SCheyiBek4+8zh04yz4sUP0WMNN9sHHywrNk0bR8C+jpYbDcXBZAEWGWTM5vAHMiSzGAzAH8i4aAdM46GgSI7lrAw5zJKdSrvLRJSmtc9tWprNUXm6z3akH29N0sE5CdELsYI7hse90BPvt1OABOjiFlXFeA338WNpCgxSGAL9qnzUo7gK+ANp+Cl0BfC0J9bmXTEEioHi4fc+S2GUAgNAZQ7zWJI7cN8QkAPrvfDGDYaxrHZMcMwFW4u7VBV3fBKaBs/wZgNrZJLEB1WUavTDBN3wFeWcD8HUDmwxkDPCkWYWg4KyjMQEKyhtVoYVGnFhoBA0hTdwQEmLJUwYTA0BzRuDKVAEzRNS2M/AwYF20KX6HTjBQcugc5jYELtD74j4C1b5kBAGaIQ0dHou7ihnhjCuBrAiqOABHqPwiIWSNePEQ6kEgDhYTUNCNRoEmaVF3jsvXEcSmU0zG97D10GQOcBu3eJjAMwOZjt9ylAIEF9ktiMWg9IbTmZLvT/dirhI08ZLTx2BaYNqxKHAl+2EgbWtyatJcafAyJbz555rHvOePTb77atP77cv3/gH8Wkk7NciByTQAAAABJRU5ErkJggg==", //
-        VERSION = "0.7c"; //
+        VERSION = "0.7c",//
+        alertIcon
+        ; //
 
     // Locals
     var inq = this, inqapp;
@@ -109,15 +111,15 @@ var inquirer = inquirer || new function () {
             inqapp = merger.app("inquirer", {
                 title: "Inquirer",
                 icon: icon,
-                // appMenu: [
-                //     merger.ui.menuItem("app_close", {
-                //         text: "Close",
-                //         icon: merger.media.closeIcon(),
-                //         onClick: function () {
-                //             merger.leave();
-                //         }
-                //     }),
-                // ],
+                appMenu: [
+                    merger.ui.menuItem("app_preferences", {
+                        text: "Preferences...",
+                        icon: merger.media.createIcon('#EEE', '⚒'),
+                        onClick: function () {
+                            this.getApp().windows.wPref.show();
+                        }
+                    }),
+                ],
                 menu: [
                     merger.ui.menuItem("app_tools", {
                         text: "Tools",
@@ -362,11 +364,57 @@ var inquirer = inquirer || new function () {
                         for (k in arguments)
                             this.log('e', arguments[k]);
                     }
-                })],
+                }),
+                merger.ui.window("wPref", {
+                    title: "Preferences",
+                    width: 175,
+                    height: 100,
+                    visible: false,
+                    content: [
+                        merger.ui.checkbox("pref_autoshow", {
+                            top: 0,
+                            left: 3,
+                        }),
+                        merger.ui.label("pref_autoshow_lbl", {
+                            top: 0,
+                            left: 20,
+                            text: "Open Inquirer on error"
+                        }),
+                        merger.ui.checkbox("pref_erricon", {
+                            top: 15,
+                            left: 3,
+                        }),
+                        merger.ui.label("pref_erricon_lbl", {
+                            top: 15,
+                            left: 20,
+                            text: "Show small error indicator"
+                        }),
+                        merger.ui.button("pref_save", {
+                            top: 80,
+                            left: 150,
+                            text: "Ok",
+                            onClick: function () {
+                                inq.autoShow = this.getWindow().content.pref_autoshow.checked;
+                                inq.alertIcon = this.getWindow().content.pref_erricon.checked;
+                                this.getWindow().close();
+                            }
+                        }),
+                    ],
+                    onShow: function () {
+                        this.getWindow().content.pref_autoshow.checked = inq.autoShow;
+                        this.getWindow().content.pref_erricon.checked = inq.alertIcon;
+                    }
+                }),
+                ],
                 onLoad: function () {
                 },
                 onAbout: function () {
                     merger.dialogs.messageBox(this, "Inquirer v" + VERSION + " ©2016-2017 XWolf Override.<br>Debugger application layer for web pages. Useful for embedded browser debugging", "About Inquirer", null, this.icon, 100);
+                },
+                onFocus: function () {
+                    removeIcon();
+                    if (!inq.autoShow)
+                        this.windows.Wconsole.show();
                 },
                 showError: function (err) {
                     if (err instanceof Error) {
@@ -382,6 +430,37 @@ var inquirer = inquirer || new function () {
             });
         return inqapp;
     }
+
+    /**
+     * Show a small yellow mark to indicate some error has been happend
+     */
+    function showIcon() {
+        if (!alertIcon) {
+            alertIcon = document.createElement("DIV");
+            alertIcon.style.merge({
+                position: "absolute",
+                top: "0px",
+                right: "3px",
+                width: "2px",
+                height: "1px",
+                background: "gold",
+                borderBottom: "goldenRod",
+            });
+            document.body.appendChild(alertIcon);
+        }
+        alertIcon.style.display = "";
+    }
+
+    /**
+     * Hides a small yellow mark to indicate some error has been happend
+     */
+    function removeIcon() {
+        if (!alertIcon)
+            return;
+        alertIcon.style.display = "none";
+    }
+
+    // === Public members
 
     function show() {
         getApp().show();
@@ -458,6 +537,9 @@ var inquirer = inquirer || new function () {
             getApp().showError(error);
             show();
         }
+        if (this.alertIcon) {
+            showIcon();
+        }
     }
 
     function inspect(object) {
@@ -476,7 +558,8 @@ var inquirer = inquirer || new function () {
     // Publish
     this.merge({
         version: VERSION,
-        autoShow: true,     // Open Inquirer environment when a new unhandled error happen
+        autoShow: false,    // Open Inquirer environment when a new unhandled error happen
+        alertIcon: true,    // Small icon on screen to indicate if there is any new error
         show: show,         // Enters environment
         hide: hide,         // Exit environent
         hook: hook,         // Hook the webpage to control errors (Automatically hooked)

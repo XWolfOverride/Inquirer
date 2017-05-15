@@ -28,7 +28,7 @@ var merger = new function () {
         sys = { // Configuration
             _type: "system",
             icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
-            ver: "0.3c",
+            ver: "0.3d",
             color: {
                 frame: "teal", //"orange"
                 client: "white",
@@ -182,15 +182,22 @@ var merger = new function () {
         function enterDesktop() {
             if (!selectedApp) {
                 switchApplication();
+            } else {
+                if (!insideDesktop() && selectedApp.onFocus)
+                    selectedApp.onFocus();
             }
             document.body.appendChild(getDesktop());
         }
 
         /** Close desktop */
         function leaveDesktop() {
-            var desktop = getDesktop();
-            if (document.body.contains(desktop))
-                document.body.removeChild(desktop);
+            if (insideDesktop())
+                document.body.removeChild(getDesktop());
+        }
+
+        /** Return true if the desktop is present */
+        function insideDesktop() {
+            return document.body.contains(getDesktop());
         }
 
         /** Create application */
@@ -212,6 +219,11 @@ var merger = new function () {
                     m.application = m.parentControl = a;
                     m.style.display = "inline-block";
                     m._root = true;
+                }
+            if (a.appMenu)
+                for (i = 0; i < a.appMenu.length; i++) {
+                    var m = a.appMenu[i];
+                    m.application = m.parentControl = a;
                 }
             if (a.onLoad)
                 a.onLoad();
@@ -238,8 +250,11 @@ var merger = new function () {
                 for (i in selectedApp.windows)
                     core.getDesktop().removeChild(selectedApp.windows[i]);
             selectedApp = a;
+            if (a.onFocus)
+                a.onFocus();
             menu.sysMenu.setIcon(a.icon ? a.icon : sys.icon);
             menu.sysMenu.setText(a.title ? a.title : a.id);
+            menu.sysMenu.application = a;
             menu.sysMenu.items = [];
             menu.sysMenu.items.push(
                 m = merger.ui.menuItem("sys_about", {
@@ -271,9 +286,9 @@ var merger = new function () {
                     m.parentControl = menu.sysMenu;
                 }
             }
+            menu.sysMenu.items.push(m = menuSeparator("sys_applications_separator2"));
             // Application appMenu
             if (a.appMenu && a.appMenu.length > 0) {
-                menu.sysMenu.items.push(m = menuSeparator("sys_applications_separator2"));
                 m.parentControl = menu.sysMenu;
                 for (i in a.appMenu) {
                     menu.sysMenu.items.push(m = a.appMenu[i]);
@@ -407,8 +422,6 @@ var merger = new function () {
     MergerApplication.prototype.show = function () {
         core.enterDesktop();
         core.app.focus(this.getId());
-        if (this.onEnter)
-            this.onEnter();
     }
 
     /** Add window to application */
@@ -576,7 +589,7 @@ var merger = new function () {
             if (w)
                 return w.application;
             while (a && a._type != "app")
-                a = win.parentControl;
+                a = a.parentControl;
             return a;
         }
         c.merge = function (def) {
