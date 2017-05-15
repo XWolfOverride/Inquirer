@@ -381,7 +381,7 @@ var merger = new function () {
      * Create a standard SVG icon
      */
     MergerCore.prototype.mkIcon = function (color, text) {
-        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128' version='1.1'><circle cx='64' cy='64' r='62' id='c' style='fill:" + color + ";fill-opacity:1' /><text text-anchor='middle' alignment-baseline='alphabetic' style='font-weight:bold;font-size:90px;font-family:sans-serif;fill:#ffffff;stroke:none;' x='64' y='95'>" + text + "</text></svg>";
+        return "data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20128%20128%27%20version%3D%271.1%27%3E%3Ccircle%20cx%3D%2764%27%20cy%3D%2764%27%20r%3D%2762%27%20id%3D%27c%27%20style%3D%27fill%3A" + color + "%3Bfill-opacity%3A1%27%20%2F%3E%3Ctext%20text-anchor%3D%27middle%27%20alignment-baseline%3D%27alphabetic%27%20style%3D%27font-weight%3Abold%3Bfont-size%3A90px%3Bfont-family%3Asans-serif%3Bfill%3A%23ffffff%3Bstroke%3Anone%3B%27%20x%3D%2764%27%20y%3D%2795%27%3E" + text + "%3C%2Ftext%3E%3C%2Fsvg%3";
     }
 
     /**
