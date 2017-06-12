@@ -4,7 +4,6 @@
 MY_PATH="`dirname \"$0\"`"
 NOW=`date`
 cd "$MY_PATH"
-echo "Starting publishment" >> inq.log.txt
 echo ">>> $NOW" >> inq.log.txt
 echo " Writing header" >> inq.log.txt
 echo "Starting minification"
