@@ -710,7 +710,7 @@ var merger = new function () {
                             fontFamily: "Arial",
                             fontSize: "14px",
                         },
-                        _zLayer: 2,
+                        _zLayer: 9,
                     });
                     core.getDesktop().appendChild(client);
                 }
