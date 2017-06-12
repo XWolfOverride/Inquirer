@@ -32,6 +32,12 @@ var inquirer = inquirer || new function () {
     var inq = this, inqapp;
 
     // Tools
+    function uuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
     function objectResume(obj) {
         var r, k, v;
         if (obj === null)
@@ -103,10 +109,326 @@ var inquirer = inquirer || new function () {
     }
 
     // Methods
+    /**
+     * Error window handling
+     * @param {*string} eMessage Error message
+     * @param {*string} eData Error message extended information
+     */
+    function openErrorBox(eMessage, eData) {
+        var wid, win, wwidth = 400, wheight = 150;
+        wid = "error";// + uuid();
+        win = getApp().windows[wid];
+        if (!win) {
+            win = merger.ui.window(wid, {
+                title: "Error",
+                width: wwidth,
+                height: wheight,
+                visible: false,
+                content: [merger.ui.picture("Iico", {
+                    src: bugico,
+                    top: 0,
+                    left: 0,
+                    width: 32,
+                    height: 32,
+                }),
+                merger.ui.label("Lerror", {
+                    top: 0,
+                    left: 37,
+                    width: wwidth - 37,
+                    height: 32,
+                    text: "",
+                }),
+                merger.ui.label("Tinfo", {
+                    top: 37,
+                    left: -5,
+                    width: wwidth,
+                    height: wheight - 37 - 25 - 10,
+                    multiple: true,
+                    style: {
+                        whiteSpace: "pre",
+                        fontFamily: "Lucida Console, Monospace",
+                        border: "0",
+                        overflow: "scroll",
+                        background: "#EEE",
+                        padding: "5px",
+                    },
+                }),
+                merger.ui.button("Bok", {
+                    top: wheight - 20,
+                    left: wwidth - 35,
+                    width: 35,
+                    height: 20,
+                    text: "Ok",
+                    onClick: function (e) {
+                        this.getWindow().close();
+                    }
+                }),
+                ],
+                onClose: function () {
+                    this.hide();
+                    //getApp().removeWindow(win);
+                },
+                load: function () {
+                    win.content.Lerror.setText(eMessage);
+                    win.content.Tinfo.setText(eData);
+                }
+            });
+            getApp().addWindow(win);
+        }
+        win.load();
+        win.show();
+        return win;
+    }
+
+    /** 
+     * Get the console window
+     */
+    function getConsole() {
+        var wid, win, wwidth = 500, wheight = 350;
+        wid = "console";
+        win = getApp().windows[wid];
+        if (!win) {
+            win = merger.ui.window(wid, {
+                title: "Console",
+                width: wwidth,
+                height: wheight,
+                visible: false,
+                content: [
+                    merger.ui.html("Hconsole", {
+                        top: 0,
+                        left: 0,
+                        width: wwidth,
+                        height: wheight - 20,
+                        style: {
+                            overflow: "scroll",
+                        },
+                    }),
+                    merger.ui.textbox("Tinput", {
+                        top: wheight - 20,
+                        left: -5,
+                        width: wwidth + 10,
+                        height: 25,
+                        placeholder: "javascript code here",
+                        //multiple: true,
+                        style: {
+                            whiteSpace: "pre",
+                            fontFamily: "Lucida Console, Monospace",
+                            border: "0",
+                            overflow: "scroll",
+                            background: "#EEE",
+                            padding: "5px",
+                        },
+                        onkeydown: function (e) {
+                            var t, stop;
+                            switch (e.keyCode) {
+                                case 13:
+                                    this.getWindow().exec(this.getText());
+                                    t = "";
+                                    stop = true;
+                                    break;
+                                case 38:
+                                    t = this.getWindow().conhis.up();
+                                    stop = true;
+                                    break;
+                                case 40:
+                                    t = this.getWindow().conhis.down();
+                                    stop = true;
+                                    break;
+                            }
+                            if (t != undefined) {
+                                this.setText(t);
+                            }
+                            if (stop)
+                                return false;
+                        },
+                    }),
+                ],
+                conhis: {
+                    data: [],
+                    sel: 0,
+                    add: function (code) {
+                        var idx = this.data.indexOf(code);
+                        if (idx >= 0)
+                            this.data.splice(idx, 1);
+                        this.data.push(code);
+                        this.sel = this.data.length;
+                    },
+                    up: function () {
+                        if (this.sel > 0)
+                            this.sel--;
+                        return this.data[this.sel];
+                    },
+                    down: function () {
+                        if (this.sel < this.data.length)
+                            this.sel++;
+                        else return;
+                        if (this.sel == this.data.length)
+                            return "";
+                        return this.data[this.sel];
+                    }
+                },
+                onClose: function () {
+                    this.hide();
+                    //getApp().removeWindow(win);
+                },
+                log: function (type, object) {
+                    var row = document.createElement("div");
+                    var head = document.createElement("div");
+                    var clear = document.createElement("div");
+                    var d = document.createElement("div");
+                    row.style.merge({
+                        margin: "0 0 0 13px",
+                    });
+                    head.style.merge({
+                        fontFamily: "Lucida Console, Monospace",
+                        fontWeight: "bold",
+                        float: "left",
+                        margin: "0 0 0 -13px",
+                        width: "13px",
+                    });
+                    d.style.merge({
+                        whiteSpace: "pre-wrap",
+                        float: "right",
+                        fontFamily: "Lucida Console, Monospace",
+                        border: "0",
+                        width: "100%",
+                    });
+                    clear.style.merge({
+                        clear: "both",
+                    });
+                    switch (type) {
+                        case 'i':
+                            d.innerText = object;
+                            head.appendChild(document.createTextNode(">"));
+                            head.style.color = "#88F";
+                            d.style.paddingBottom = "3px";
+                            break;
+                        case 'o':
+                            d.appendChild(objectResumeLink(object));
+                            d.style.borderBottom = "1px solid #EEE";
+                            head.appendChild(document.createTextNode("<"));
+                            head.style.color = "#DDD";
+                            break;
+                        case 'e':
+                            d.appendChild(errorLink(object));
+                            head.appendChild(document.createTextNode("!"));
+                            head.style.color = "#F88";
+                            d.style.background = "#FEE";
+                            head.style.background = "#FEE";
+                            break;
+                    }
+                    d.data = object;
+                    row.appendChild(head);
+                    row.appendChild(d);
+                    row.appendChild(clear);
+                    this.content.Hconsole.appendChild(row);
+                    this.content.Hconsole.scrollTop = this.content.Hconsole.scrollHeight;
+                },
+                exec: function (code) {
+                    if (code == null || typeof code != "string" || code.length < 1)
+                        return;
+                    this.conhis.add(code);
+                    var err, obj;
+                    this.log('i', code);
+                    try {
+                        obj = eval('(' + code + ')');
+                    } catch (err) {
+                        window.console.error(err);
+                        return;
+                    }
+                    window.console.log(obj);
+                },
+                write: function () {
+                    var k;
+                    for (k in arguments)
+                        this.log('o', arguments[k]);
+                },
+                writeError: function () {
+                    var k;
+                    for (k in arguments)
+                        this.log('e', arguments[k]);
+                },
+                load: function () {
+                    win.write("Inquirer " + VERSION + " console.");
+                }
+            });
+            getApp().addWindow(win);
+            win.load();
+        }
+        return win;
+    }
+
+    /** 
+     * Open the console window
+     */
+    function openConsole() {
+        var win = getConsole();
+        win.show();
+        return win;
+    }
+
+    /**
+     * Open the properties window
+     */
+    function openProperties() {
+        var wid, win, wwidth = 175, wheight = 100;
+        wid = "preferences";
+        win = getApp().windows[wid];
+        if (!win) {
+            win = merger.ui.window(wid, {
+                title: "Preferences",
+                width: wwidth,
+                height: wheight,
+                visible: false,
+                content: [
+                    merger.ui.checkbox("pref_autoshow", {
+                        top: 0,
+                        left: 3,
+                    }),
+                    merger.ui.label("pref_autoshow_lbl", {
+                        top: 0,
+                        left: 20,
+                        text: "Open Inquirer on error"
+                    }),
+                    merger.ui.checkbox("pref_erricon", {
+                        top: 15,
+                        left: 3,
+                    }),
+                    merger.ui.label("pref_erricon_lbl", {
+                        top: 15,
+                        left: 20,
+                        text: "Show small error indicator"
+                    }),
+                    merger.ui.button("pref_save", {
+                        top: wheight - 20,
+                        left: wwidth - 25,
+                        text: "Ok",
+                        onClick: function () {
+                            inq.autoShow = this.getWindow().content.pref_autoshow.checked;
+                            inq.alertIcon = this.getWindow().content.pref_erricon.checked;
+                            this.getWindow().close();
+                        }
+                    }),
+                ],
+                onShow: function () {
+                    this.getWindow().content.pref_autoshow.checked = inq.autoShow;
+                    this.getWindow().content.pref_erricon.checked = inq.alertIcon;
+                }
+            });
+            getApp().addWindow(win);
+        }
+        win.show();
+        return win;
+    }
+
+    function openInspector(){
+        
+    }
+
+    /**
+     * Get Inquirer application
+     */
     function getApp() {
-        var
-            win_err_width = 400,
-            win_err_height = 150;
         if (!inqapp)
             inqapp = merger.app("inquirer", {
                 title: "Inquirer",
@@ -117,6 +439,7 @@ var inquirer = inquirer || new function () {
                         icon: merger.media.createIcon('#EEE', '⚒'),
                         onClick: function () {
                             this.getApp().windows.wPref.show();
+                            //openProperties();
                         }
                     }),
                 ],
@@ -152,259 +475,7 @@ var inquirer = inquirer || new function () {
                         ]
                     })
                 ],
-                windows: [merger.ui.window("Wmain", {
-                    title: "Error",
-                    width: win_err_width,
-                    height: win_err_height,
-                    visible: false,
-                    content: [merger.ui.picture("Iico", {
-                        src: bugico,
-                        top: 0,
-                        left: 0,
-                        width: 32,
-                        height: 32,
-                    }),
-                    merger.ui.label("Lerror", {
-                        top: 0,
-                        left: 37,
-                        width: win_err_width - 37,
-                        height: 32,
-                        text: "",
-                    }),
-                    merger.ui.label("Tinfo", {
-                        top: 37,
-                        left: -5,
-                        width: win_err_width,
-                        height: win_err_height - 37 - 25 - 10,
-                        multiple: true,
-                        style: {
-                            whiteSpace: "pre",
-                            fontFamily: "Lucida Console, Monospace",
-                            border: "0",
-                            overflow: "scroll",
-                            background: "#EEE",
-                            padding: "5px",
-                        },
-                    }),
-                    merger.ui.button("Bok", {
-                        top: win_err_height - 20,
-                        left: win_err_width - 35,
-                        width: 35,
-                        height: 20,
-                        text: "Ok",
-                        onClick: function (e) {
-                            this.getWindow().close();
-                        }
-                    }),
-                    ],
-                    onClose: function () {
-                        this.hide();
-                        //merger.leave();
-                    },
-                    setError: function (message, data) {
-                        this.content.Lerror.setText(message);
-                        this.content.Tinfo.setText(data);
-                    }
-                }), merger.ui.window("Wconsole", {
-                    title: "Console",
-                    width: 500,
-                    height: 350,
-                    visible: false,
-                    content: [
-                        merger.ui.html("Hconsole", {
-                            top: 0,
-                            left: 0,
-                            width: 500,
-                            height: 330,
-                            style: {
-                                overflow: "scroll",
-                            },
-                        }),
-                        merger.ui.textbox("Tinput", {
-                            top: 330,
-                            left: -5,
-                            width: 500 + 10,
-                            height: 25,
-                            placeholder: "javascript code here",
-                            //multiple: true,
-                            style: {
-                                whiteSpace: "pre",
-                                fontFamily: "Lucida Console, Monospace",
-                                border: "0",
-                                overflow: "scroll",
-                                background: "#EEE",
-                                padding: "5px",
-                            },
-                            onkeydown: function (e) {
-                                var t, stop;
-                                switch (e.keyCode) {
-                                    case 13:
-                                        this.getWindow().exec(this.getText());
-                                        t = "";
-                                        stop = true;
-                                        break;
-                                    case 38:
-                                        t = this.getWindow().conhis.up();
-                                        stop = true;
-                                        break;
-                                    case 40:
-                                        t = this.getWindow().conhis.down();
-                                        stop = true;
-                                        break;
-                                }
-                                if (t != undefined) {
-                                    this.setText(t);
-                                }
-                                if (stop)
-                                    return false;
-                            },
-                        }),
-                    ],
-                    conhis: {
-                        data: [],
-                        sel: 0,
-                        add: function (code) {
-                            var idx = this.data.indexOf(code);
-                            if (idx >= 0)
-                                this.data.splice(idx, 1);
-                            this.data.push(code);
-                            this.sel = this.data.length;
-                        },
-                        up: function () {
-                            if (this.sel > 0)
-                                this.sel--;
-                            return this.data[this.sel];
-                        },
-                        down: function () {
-                            if (this.sel < this.data.length)
-                                this.sel++;
-                            else return;
-                            if (this.sel == this.data.length)
-                                return "";
-                            return this.data[this.sel];
-                        }
-                    },
-                    onClose: function () {
-                        this.hide();
-                    },
-                    log: function (type, object) {
-                        var row = document.createElement("div");
-                        var head = document.createElement("div");
-                        var clear = document.createElement("div");
-                        var d = document.createElement("div");
-                        row.style.merge({
-                            margin: "0 0 0 13px",
-                        });
-                        head.style.merge({
-                            fontFamily: "Lucida Console, Monospace",
-                            fontWeight: "bold",
-                            float: "left",
-                            margin: "0 0 0 -13px",
-                            width: "13px",
-                        });
-                        d.style.merge({
-                            whiteSpace: "pre-wrap",
-                            float: "right",
-                            fontFamily: "Lucida Console, Monospace",
-                            border: "0",
-                            width: "100%",
-                        });
-                        clear.style.merge({
-                            clear: "both",
-                        });
-                        switch (type) {
-                            case 'i':
-                                d.innerText = object;
-                                head.appendChild(document.createTextNode(">"));
-                                head.style.color = "#88F";
-                                d.style.paddingBottom = "3px";
-                                break;
-                            case 'o':
-                                d.appendChild(objectResumeLink(object));
-                                d.style.borderBottom = "1px solid #EEE";
-                                head.appendChild(document.createTextNode("<"));
-                                head.style.color = "#DDD";
-                                break;
-                            case 'e':
-                                d.appendChild(errorLink(object));
-                                head.appendChild(document.createTextNode("!"));
-                                head.style.color = "#F88";
-                                d.style.background = "#FEE";
-                                head.style.background = "#FEE";
-                                break;
-                        }
-                        d.data = object;
-                        row.appendChild(head);
-                        row.appendChild(d);
-                        row.appendChild(clear);
-                        this.content.Hconsole.appendChild(row);
-                        this.content.Hconsole.scrollTop = this.content.Hconsole.scrollHeight;
-                    },
-                    exec: function (code) {
-                        if (code == null || typeof code != "string" || code.length < 1)
-                            return;
-                        this.conhis.add(code);
-                        var err, obj;
-                        this.log('i', code);
-                        try {
-                            obj = eval('(' + code + ')');
-                        } catch (err) {
-                            window.console.error(err);
-                            return;
-                        }
-                        window.console.log(obj);
-                    },
-                    write: function () {
-                        var k;
-                        for (k in arguments)
-                            this.log('o', arguments[k]);
-                    },
-                    writeError: function () {
-                        var k;
-                        for (k in arguments)
-                            this.log('e', arguments[k]);
-                    }
-                }),
-                merger.ui.window("wPref", {
-                    title: "Preferences",
-                    width: 175,
-                    height: 100,
-                    visible: false,
-                    content: [
-                        merger.ui.checkbox("pref_autoshow", {
-                            top: 0,
-                            left: 3,
-                        }),
-                        merger.ui.label("pref_autoshow_lbl", {
-                            top: 0,
-                            left: 20,
-                            text: "Open Inquirer on error"
-                        }),
-                        merger.ui.checkbox("pref_erricon", {
-                            top: 15,
-                            left: 3,
-                        }),
-                        merger.ui.label("pref_erricon_lbl", {
-                            top: 15,
-                            left: 20,
-                            text: "Show small error indicator"
-                        }),
-                        merger.ui.button("pref_save", {
-                            top: 80,
-                            left: 150,
-                            text: "Ok",
-                            onClick: function () {
-                                inq.autoShow = this.getWindow().content.pref_autoshow.checked;
-                                inq.alertIcon = this.getWindow().content.pref_erricon.checked;
-                                this.getWindow().close();
-                            }
-                        }),
-                    ],
-                    onShow: function () {
-                        this.getWindow().content.pref_autoshow.checked = inq.autoShow;
-                        this.getWindow().content.pref_erricon.checked = inq.alertIcon;
-                    }
-                }),
+                windows: [
                 ],
                 onLoad: function () {
                 },
@@ -414,18 +485,16 @@ var inquirer = inquirer || new function () {
                 onFocus: function () {
                     removeIcon();
                     if (!inq.autoShow)
-                        this.windows.Wconsole.show();
+                        openConsole();
                 },
                 showError: function (err) {
-                    if (err instanceof Error) {
-                        this.windows.Wmain.setError(err.message, err.stack);
-                    } else {
-                        this.windows.Wmain.setError(err.message, "File: " + err.source + "\r\n\r\nAt: " + err.at);
-                    }
-                    this.windows.Wmain.show();
+                    if (err instanceof Error)
+                        openErrorBox(err.message, err.stack);
+                    else
+                        openErrorBox(err.message, "File: " + err.source + "\r\n\r\nAt: " + err.at);
                 },
                 showConsole: function () {
-                    this.windows.Wconsole.show();
+                    openConsole();
                 }
             });
         return inqapp;
@@ -501,26 +570,28 @@ var inquirer = inquirer || new function () {
 
     // Console hook
     function hookConsole() {
-        var wcon = getApp().windows.Wconsole;
         if (!window.console)
             window.console = {};
         function consoleOverride(method, funct) {
             var old = window.console[method];
             window.console[method] = function () {
-                funct.apply(this, arguments);
+                funct.apply(window.console, arguments);
                 if (old)
-                    old.apply(this, arguments);
+                    old.apply(window.console, arguments);
             };
             window.console[method].old = old;
         }
         consoleOverride("log", function () {
-            wcon.write.apply(wcon, arguments);
+            openConsole().write.apply(openConsole(), arguments);
+        })
+        consoleOverride("info", function () {
+            openConsole().write.apply(openConsole(), arguments);
         })
         consoleOverride("debug", function () {
-            wcon.write.apply(wcon, arguments);
+            openConsole().write.apply(openConsole(), arguments);
         })
         consoleOverride("error", function () {
-            wcon.writeError.apply(wcon, arguments);
+            openConsole().writeError.apply(openConsole(), arguments);
         })
     }
 
@@ -532,7 +603,7 @@ var inquirer = inquirer || new function () {
     }
 
     function error(error) {
-        getApp().windows.Wconsole.writeError(error);
+        getConsole().writeError(error);
         if (this.autoShow) {
             getApp().showError(error);
             show();
@@ -571,7 +642,4 @@ var inquirer = inquirer || new function () {
 
     // Hook the page now
     hook();
-    window.addEventListener("load", function () {
-        getApp().windows.Wconsole.write("Inquirer " + VERSION + " console.");
-    })
 }();

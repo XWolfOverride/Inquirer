@@ -28,7 +28,7 @@ var merger = new function () {
         sys = { // Configuration
             _type: "system",
             icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
-            ver: "0.3d",
+            ver: "0.3e",
             color: {
                 frame: "teal", //"orange"
                 client: "white",
@@ -231,6 +231,23 @@ var merger = new function () {
 
         }
 
+        /** List all registered applications */
+        function listApplications() {
+            var result = [], k;
+            for (k in apps)
+                result.push(k);
+            return result;
+        }
+
+        /** Return true if application id is registered */
+        function existsApplication(id) {
+            var k;
+            for (k in apps)
+                if (k == id)
+                    return true;
+            return false;
+        }
+
         /** Switch to application */
         function switchApplication(a) {
             var i, m, ax, menu = getMenu();
@@ -349,6 +366,8 @@ var merger = new function () {
             leaveDesktop: leaveDesktop,
             app: {
                 create: createApplication,
+                list: listApplications,
+                exists: existsApplication,
                 switch: switchApplication,
                 focus: focusApplication,
                 getFocused: getSelectedAppId,
@@ -886,6 +905,7 @@ var merger = new function () {
                 if (val < 20)
                     val = 20;
                 def.top = val;
+                this.top = val;
                 this.style.top = val + "px";
             },
             setVisible: function (vis) {
@@ -1166,6 +1186,8 @@ var merger = new function () {
     // -- Kernel
     this.merge({
         app: core.app.create,
+        listApps: core.app.list,
+        existsApp: core.app.exists,
         enter: core.enterDesktop,
         leave: core.leaveDesktop,
         version: sys.ver,
