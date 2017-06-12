@@ -467,6 +467,27 @@ var merger = new function () {
         core.getDesktop().removeChild(win);
     }
 
+    /** Count windows on application */
+    MergerApplication.prototype.listWindows = function () {
+        var k, r = [];
+        for (k in this.windows)
+            r.push(k);
+        return r;
+    }
+
+    /** Return the currently focused window on application */
+    MergerApplication.prototype.getFocusedWindow = function () {
+        var k, w, s, l;
+        for (k in this.windows) {
+            w = this.windows[k];
+            if (w.getVisible() && (!s || Number(w.style.zIndex) > l)) {
+                s = w;
+                l = Number(w.style.zIndex);
+            }
+        }
+        return s;
+    }
+
     //=== Tools
     //=============================================================================================
 
@@ -728,6 +749,7 @@ var merger = new function () {
                             border: "1px solid " + sys.color.frame,
                             fontFamily: "Arial",
                             fontSize: "14px",
+                            zIndex: 9999,
                         },
                         _zLayer: 9,
                     });

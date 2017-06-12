@@ -24,7 +24,7 @@ var inquirer = inquirer || new function () {
 
     var icon = "data:image/gif;base64,R0lGODlhIAAgAKECADIyMjMzM////////yH5BAEKAAIALAAAAAAgACAAAAJulI8Zke2PFoC0LlZzW7qf633XGGHeiJqcaKWgsQov5JLvTNeYq+kM36vBUJNgaujDiVDIpLK58ylIiiU0NjWVZscHgAuUUXPOpfbhjD1bwmFIrHsvv+3Qrd4Byzda7N7h9zclmEOIFmgolgj4VgAAOw==", //
         bugico = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAWlBMVEUkJSMuMC01NzQ+Pz1HSEZPUU5YWldfYV5pa2h6e3iOkI2YmpeipKGpq6ifwFWqxma4urezzHa50YHJy8jC1pLL3aLS4K3a3NnZ5rvo6+fn8NXv8+L19/D9//y9fxQqAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+EBBAwFN28edE4AAABVaVRYdENvbW1lbnQAAAAAAENvcHlyaWdodCBJTkNPUlMgR21iSCAod3d3Lmljb25leHBlcmllbmNlLmNvbSkgLSBVbmxpY2Vuc2VkIHByZXZpZXcgaW1hZ2VYrophAAAC6UlEQVRYw+2X2barIAxA0U5qK2jFAor//5uXSUUS2q5z1n07vNhC2JCYSbL8cpA/wAeAGswQPwc0xI3qO4BWcPVs95/gvNYQIAhpgGBtATcw3RLSpgBtRYdU8oLeQNhZlQCUnazDny7YrfM2uK8Hh+fDTopUBavuOfwuH+4xlB5QdP5vEU69xdfaAMOONT8fQg012UY1CNGuV1HxraK3UGw6XEhm+BveYw0igNWh3OyJD6fD1WqF+EG7glUeYJdFEWsQe6I1WTG8BdjVMn6JB8DNvXTjY12R2X9HnDMCqNPqSxmCebl6UWatFHgwmdtdl4XzoGcyrHav3rp3IXLRqEq9SEqf5qQq3X8xao+UjstyEvlwNgZglNLePMX9FJ1e203cLDEn9CYfvKgdTLqgaWsDKa6NM4xkbol/SCheyiBek4+8zh04yz4sUP0WMNN9sHHywrNk0bR8C+jpYbDcXBZAEWGWTM5vAHMiSzGAzAH8i4aAdM46GgSI7lrAw5zJKdSrvLRJSmtc9tWprNUXm6z3akH29N0sE5CdELsYI7hse90BPvt1OABOjiFlXFeA338WNpCgxSGAL9qnzUo7gK+ANp+Cl0BfC0J9bmXTEEioHi4fc+S2GUAgNAZQ7zWJI7cN8QkAPrvfDGDYaxrHZMcMwFW4u7VBV3fBKaBs/wZgNrZJLEB1WUavTDBN3wFeWcD8HUDmwxkDPCkWYWg4KyjMQEKyhtVoYVGnFhoBA0hTdwQEmLJUwYTA0BzRuDKVAEzRNS2M/AwYF20KX6HTjBQcugc5jYELtD74j4C1b5kBAGaIQ0dHou7ihnhjCuBrAiqOABHqPwiIWSNePEQ6kEgDhYTUNCNRoEmaVF3jsvXEcSmU0zG97D10GQOcBu3eJjAMwOZjt9ylAIEF9ktiMWg9IbTmZLvT/dirhI08ZLTx2BaYNqxKHAl+2EgbWtyatJcafAyJbz555rHvOePTb77atP77cv3/gH8Wkk7NciByTQAAAABJRU5ErkJggg==", //
-        VERSION = "0.7c",//
+        VERSION = "0.7d",//
         alertIcon
         ; //
 
@@ -63,7 +63,7 @@ var inquirer = inquirer || new function () {
                 r += "{\n";
                 for (k in obj) {
                     r += k + ":" + objectResume(obj[k]) + ",\n";
-                    if (r.length > 500) {
+                    if (r.length > 400) {
                         r += " ...";
                         break;
                     }
@@ -123,7 +123,6 @@ var inquirer = inquirer || new function () {
                 title: "Error",
                 width: wwidth,
                 height: wheight,
-                visible: false,
                 content: [merger.ui.picture("Iico", {
                     src: bugico,
                     top: 0,
@@ -184,30 +183,33 @@ var inquirer = inquirer || new function () {
      * Get the console window
      */
     function getConsole() {
-        var wid, win, wwidth = 500, wheight = 350;
+        var wid, win, wwidth = 300, wheight = 250, inputHeight = 20;
         wid = "console";
         win = getApp().windows[wid];
+        if (document.body.scrollWidth)
+            wwidth = Math.max(wwidth, document.body.scrollWidth - 200);
+        if (document.body.scrollHeight)
+            wheight = Math.max(wheight, document.body.scrollHeight - 150);
         if (!win) {
             win = merger.ui.window(wid, {
                 title: "Console",
                 width: wwidth,
                 height: wheight,
-                visible: false,
                 content: [
                     merger.ui.html("Hconsole", {
                         top: 0,
                         left: 0,
                         width: wwidth,
-                        height: wheight - 20,
+                        height: wheight - (inputHeight - 5),
                         style: {
                             overflow: "scroll",
                         },
                     }),
                     merger.ui.textbox("Tinput", {
-                        top: wheight - 20,
+                        top: wheight - (inputHeight - 5),
                         left: -5,
                         width: wwidth + 10,
-                        height: 25,
+                        height: inputHeight,
                         placeholder: "javascript code here",
                         //multiple: true,
                         style: {
@@ -216,7 +218,7 @@ var inquirer = inquirer || new function () {
                             border: "0",
                             overflow: "scroll",
                             background: "#EEE",
-                            padding: "5px",
+                            padding: "3px",
                         },
                         onkeydown: function (e) {
                             var t, stop;
@@ -379,7 +381,6 @@ var inquirer = inquirer || new function () {
                 title: "Preferences",
                 width: wwidth,
                 height: wheight,
-                visible: false,
                 content: [
                     merger.ui.checkbox("pref_autoshow", {
                         top: 0,
@@ -421,8 +422,35 @@ var inquirer = inquirer || new function () {
         return win;
     }
 
-    function openInspector(){
-        
+    /**
+     * Open inspector window
+     * @param {*} object Any object to inspect
+     */
+    function openInspector(object) {
+        var wid, win, wwidth = 250, wheight = 300;
+        wid = "inspector_" + uuid();
+        win = merger.ui.window(wid, {
+            title: "Inspector",
+            width: wwidth,
+            height: wheight,
+            content: [
+                merger.ui.button("pref_save", {
+                    top: wheight - 20,
+                    left: wwidth - 25,
+                    text: "Ok",
+                    onClick: function () {
+                        this.getWindow().close();
+                    }
+                }),
+            ],
+            onClose: function () {
+                this.hide();
+                getApp().removeWindow(win);
+            }
+        });
+        getApp().addWindow(win);
+        win.show();
+        return win;
     }
 
     /**
@@ -438,8 +466,7 @@ var inquirer = inquirer || new function () {
                         text: "Preferences...",
                         icon: merger.media.createIcon('#EEE', '⚒'),
                         onClick: function () {
-                            this.getApp().windows.wPref.show();
-                            //openProperties();
+                            openProperties();
                         }
                     }),
                 ],
@@ -484,7 +511,7 @@ var inquirer = inquirer || new function () {
                 },
                 onFocus: function () {
                     removeIcon();
-                    if (!inq.autoShow)
+                    if (!getApp().getFocusedWindow())
                         openConsole();
                 },
                 showError: function (err) {
@@ -614,7 +641,8 @@ var inquirer = inquirer || new function () {
     }
 
     function inspect(object) {
-
+        openInspector(object);
+        show();
     }
 
     function console() {
