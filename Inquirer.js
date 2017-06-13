@@ -25,11 +25,23 @@ var inquirer = inquirer || new function () {
     var icon = "data:image/gif;base64,R0lGODlhIAAgAKECADIyMjMzM////////yH5BAEKAAIALAAAAAAgACAAAAJulI8Zke2PFoC0LlZzW7qf633XGGHeiJqcaKWgsQov5JLvTNeYq+kM36vBUJNgaujDiVDIpLK58ylIiiU0NjWVZscHgAuUUXPOpfbhjD1bwmFIrHsvv+3Qrd4Byzda7N7h9zclmEOIFmgolgj4VgAAOw==", //
         bugico = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAWlBMVEUkJSMuMC01NzQ+Pz1HSEZPUU5YWldfYV5pa2h6e3iOkI2YmpeipKGpq6ifwFWqxma4urezzHa50YHJy8jC1pLL3aLS4K3a3NnZ5rvo6+fn8NXv8+L19/D9//y9fxQqAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+EBBAwFN28edE4AAABVaVRYdENvbW1lbnQAAAAAAENvcHlyaWdodCBJTkNPUlMgR21iSCAod3d3Lmljb25leHBlcmllbmNlLmNvbSkgLSBVbmxpY2Vuc2VkIHByZXZpZXcgaW1hZ2VYrophAAAC6UlEQVRYw+2X2barIAxA0U5qK2jFAor//5uXSUUS2q5z1n07vNhC2JCYSbL8cpA/wAeAGswQPwc0xI3qO4BWcPVs95/gvNYQIAhpgGBtATcw3RLSpgBtRYdU8oLeQNhZlQCUnazDny7YrfM2uK8Hh+fDTopUBavuOfwuH+4xlB5QdP5vEU69xdfaAMOONT8fQg012UY1CNGuV1HxraK3UGw6XEhm+BveYw0igNWh3OyJD6fD1WqF+EG7glUeYJdFEWsQe6I1WTG8BdjVMn6JB8DNvXTjY12R2X9HnDMCqNPqSxmCebl6UWatFHgwmdtdl4XzoGcyrHav3rp3IXLRqEq9SEqf5qQq3X8xao+UjstyEvlwNgZglNLePMX9FJ1e203cLDEn9CYfvKgdTLqgaWsDKa6NM4xkbol/SCheyiBek4+8zh04yz4sUP0WMNN9sHHywrNk0bR8C+jpYbDcXBZAEWGWTM5vAHMiSzGAzAH8i4aAdM46GgSI7lrAw5zJKdSrvLRJSmtc9tWprNUXm6z3akH29N0sE5CdELsYI7hse90BPvt1OABOjiFlXFeA338WNpCgxSGAL9qnzUo7gK+ANp+Cl0BfC0J9bmXTEEioHi4fc+S2GUAgNAZQ7zWJI7cN8QkAPrvfDGDYaxrHZMcMwFW4u7VBV3fBKaBs/wZgNrZJLEB1WUavTDBN3wFeWcD8HUDmwxkDPCkWYWg4KyjMQEKyhtVoYVGnFhoBA0hTdwQEmLJUwYTA0BzRuDKVAEzRNS2M/AwYF20KX6HTjBQcugc5jYELtD74j4C1b5kBAGaIQ0dHou7ihnhjCuBrAiqOABHqPwiIWSNePEQ6kEgDhYTUNCNRoEmaVF3jsvXEcSmU0zG97D10GQOcBu3eJjAMwOZjt9ylAIEF9ktiMWg9IbTmZLvT/dirhI08ZLTx2BaYNqxKHAl+2EgbWtyatJcafAyJbz555rHvOePTb77atP77cv3/gH8Wkk7NciByTQAAAABJRU5ErkJggg==", //
         VERSION = "0.7d",//
-        alertIcon
-        ; //
+        alertIcon,
+        config = {
+            color: {
+                normal: "#000",
+                string: "#0A0",
+                number: "#00B",
+                keyword: "#809",
+            },
+        }; //
 
     // Locals
     var inq = this, inqapp;
+
+    // Types
+    function BasicError(data) {
+        this.merge(data);
+    }
 
     // Tools
     function uuid() {
@@ -38,7 +50,7 @@ var inquirer = inquirer || new function () {
             return v.toString(16);
         });
     }
-    function objectResume(obj) {
+    function objectResumeText(obj) {
         var r, k, v;
         if (obj === null)
             return "<null>";
@@ -62,7 +74,7 @@ var inquirer = inquirer || new function () {
                     r += "WINDOW:: ";
                 r += "{\n";
                 for (k in obj) {
-                    r += k + ":" + objectResume(obj[k]) + ",\n";
+                    r += k + ":" + objectResumeText(obj[k]) + ",\n";
                     if (r.length > 400) {
                         r += " ...";
                         break;
@@ -76,36 +88,169 @@ var inquirer = inquirer || new function () {
     }
 
     function objectResumeLink(obj) {
-        var a = document.createElement("a");
+        var a = document.createElement("a"), isError;
         a.href = "#";
-        a.onclick = function () {
-            inq.inspect(obj);
-            return false;
+        if (obj instanceof Error) {
+            a.appendChild(document.createTextNode(obj));
+            isError = true;
         }
-        a.appendChild(document.createTextNode(objectResume(obj)));
+        else if (obj instanceof BasicError) {
+            a.appendChild(document.createTextNode(obj.message));
+            isError = true;
+        } else
+            a.appendChild(document.createTextNode(objectResumeText(obj)));
         a.style.merge({
             color: "black",
             textDecoration: "none"
         });
+        a.onclick = function () {
+            if (isError)
+                getApp().showError(obj);
+            else
+                inq.inspect(obj);
+            return false;
+        }
         return a;
     }
 
-    function errorLink(obj) {
-        var a = document.createElement("a");
-        a.href = "#";
-        a.onclick = function () {
-            getApp().showError(obj);
-            return false;
+    /** A formatter tool for console output */
+    function formatter(rtd) {
+        var r, p, rtp, i;
+        r = document.createElement("span");
+        for (i in rtd) {
+            rtp = rtd[i];
+            if (!rtp)
+                continue;
+            p = document.createElement("span");
+            p.data = rtp;
+            if (rtp.c)
+                p.style.color = rtp.c;
+            p.innerText = rtp.v;
+            r.appendChild(p);
         }
-        if (obj instanceof Error)
-            a.appendChild(document.createTextNode(obj));
-        else
-            a.appendChild(document.createTextNode(obj.message));
-        a.style.merge({
-            color: "black",
-            textDecoration: "none"
-        });
-        return a;
+        return r;
+    }
+
+    /** expandable object resume */
+    function compactObject(co) {
+        var r, f, m, d;
+        r = document.createElement("span");
+        f = document.createElement("span");
+        m = formatter(co.m);
+        d = formatter(co.d);
+        function open() {
+            f.innerText = "▼ ";
+            if (r.contains(m))
+                r.removeChild(m);
+            r.appendChild(d);
+            f.onclick = close;
+            return r;
+        }
+        function close() {
+            f.innerText = "▶︎ ";
+            if (r.contains(d))
+                r.removeChild(d);
+            r.appendChild(m);
+            f.onclick = open;
+            return r;
+        }
+        f.style.cursor = "pointer";
+        r.appendChild(f);
+        r.close = close;
+        r.open = open;
+        close();
+        return r;
+    }
+
+    /** formatice function details */
+    function functionDetails(f) {
+        var s, r = [];
+        if (f) {
+            s = f.toString().trim();
+            r.push({ c: config.color.keyword, v: "function " });
+            if (s.substr(0, 8) === "function")
+                s = s.substr(8).trim();
+            r.push({ c: config.color.normal, v: s });
+        }
+        return r;
+    }
+
+    /** formatice object resume */
+    function objectResume(o) {
+        return [];
+    }
+
+    /** foramtice object details */
+    function objectDetails(o) {
+        return [];
+    }
+
+    /** return the function name */
+    function functionName(f) {
+        if (!f)
+            return "";
+        if (f.name)
+            return f.name;
+        var funcNameRegex, results;
+        funcNameRegex = /function (.{1,})\(/;
+        results = (funcNameRegex).exec(f.toString());//(this).constructor.toString());
+        return (results && results.length > 1) ? results[1] : "";
+    }
+
+    /** Advanced way to show object on screen */
+    function objectRow(obj, full, expanded) {
+        var row, robj;
+        row = document.createElement("div");
+        if (obj === null)
+            row.innerText = "<null>";
+        else if (obj === undefined)
+            row.innerText = "<undefined>";
+        else switch (typeof obj) {
+            case "string":
+                if (!full && obj.length > 200)
+                    row.appendChild(formatter([
+                        { c: config.color.normal, v: '"' },
+                        { c: config.color.string, v: obj.substr(0, 200) },
+                        { c: config.color.normal, v: '..."' },
+                    ]))
+                else
+                    row.appendChild(formatter([
+                        { c: config.color.normal, v: '"' },
+                        { c: config.color.string, v: obj },
+                        { c: config.color.normal, v: '"' },
+                    ]))
+                break;
+            case "number":
+                row.appendChild(formatter([
+                    { c: config.color.number, v: obj },
+                ]));
+                break;
+            case "function":
+                row.appendChild(robj = compactObject({
+                    m: [
+                        { c: config.color.keyword, v: "function" },
+                        obj.name ? { c: config.color.normal, v: " " + functionName(obj) } : null,
+                        { c: config.color.normal, v: "() {...}" },
+                    ],
+                    d: functionDetails(obj)
+                }));
+                break;
+            case "object":
+                row.appendChild(robj = compactObject({
+                    m: [
+                        obj.constructor ? { c: config.color.normal, v: functionName(obj.constructor) + " " } : null,
+                        { c: config.color.normal, v: "{...}" },
+                    ],
+                    d: objectDetails(obj)
+                }));
+                break;
+            default:
+                row.innerText = obj;
+                break;
+        }
+        if (expanded)
+            robj.open();
+        return row;
     }
 
     // Methods
@@ -312,7 +457,7 @@ var inquirer = inquirer || new function () {
                             head.style.color = "#DDD";
                             break;
                         case 'e':
-                            d.appendChild(errorLink(object));
+                            d.appendChild(objectResumeLink(object));
                             head.appendChild(document.createTextNode("!"));
                             head.style.color = "#F88";
                             d.style.background = "#FEE";
@@ -427,13 +572,22 @@ var inquirer = inquirer || new function () {
      * @param {*} object Any object to inspect
      */
     function openInspector(object) {
-        var wid, win, wwidth = 250, wheight = 300;
+        var wid, win, wwidth = 250, wheight = 300, panel;
         wid = "inspector_" + uuid();
         win = merger.ui.window(wid, {
             title: "Inspector",
             width: wwidth,
             height: wheight,
             content: [
+                panel = merger.ui.html("panel", {
+                    top: 0,
+                    left: 0,
+                    width: wwidth,
+                    height: wheight - 25,
+                    style: {
+                        overflow: "scroll",
+                    },
+                }),
                 merger.ui.button("pref_save", {
                     top: wheight - 20,
                     left: wwidth - 25,
@@ -443,12 +597,16 @@ var inquirer = inquirer || new function () {
                     }
                 }),
             ],
+            load: function () {
+                panel.appendChild(objectRow(object, true, true));
+            },
             onClose: function () {
                 this.hide();
                 getApp().removeWindow(win);
             }
         });
         getApp().addWindow(win);
+        win.load();
         win.show();
         return win;
     }
@@ -570,13 +728,13 @@ var inquirer = inquirer || new function () {
     function hookOnError() {
         var formerOnError = window.onerror;
         window.onerror = function (message, source, lineno, colno, err) {
-            inq.error({
+            inq.error(new BasicError({
                 message: message,
                 source: source,
                 at: lineno + ":" + colno,
                 error: err,
                 raw: arguments
-            });
+            }));
             if (formerOnError)
                 formerOnError.apply(window, arguments);
         }
@@ -666,6 +824,7 @@ var inquirer = inquirer || new function () {
         inspect: inspect,   // Enters environment and open variable inspector
         console: console,   // Enters environment and open inquirer console
         log: log,           // Log an object into the console
+        config: config,     // Configuration object
     });
 
     // Hook the page now
