@@ -24,7 +24,7 @@ var inquirer = inquirer || new function () {
 
     var icon = "data:image/gif;base64,R0lGODlhIAAgAKECADIyMjMzM////////yH5BAEKAAIALAAAAAAgACAAAAJulI8Zke2PFoC0LlZzW7qf633XGGHeiJqcaKWgsQov5JLvTNeYq+kM36vBUJNgaujDiVDIpLK58ylIiiU0NjWVZscHgAuUUXPOpfbhjD1bwmFIrHsvv+3Qrd4Byzda7N7h9zclmEOIFmgolgj4VgAAOw==", //
         bugico = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAWlBMVEUkJSMuMC01NzQ+Pz1HSEZPUU5YWldfYV5pa2h6e3iOkI2YmpeipKGpq6ifwFWqxma4urezzHa50YHJy8jC1pLL3aLS4K3a3NnZ5rvo6+fn8NXv8+L19/D9//y9fxQqAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+EBBAwFN28edE4AAABVaVRYdENvbW1lbnQAAAAAAENvcHlyaWdodCBJTkNPUlMgR21iSCAod3d3Lmljb25leHBlcmllbmNlLmNvbSkgLSBVbmxpY2Vuc2VkIHByZXZpZXcgaW1hZ2VYrophAAAC6UlEQVRYw+2X2barIAxA0U5qK2jFAor//5uXSUUS2q5z1n07vNhC2JCYSbL8cpA/wAeAGswQPwc0xI3qO4BWcPVs95/gvNYQIAhpgGBtATcw3RLSpgBtRYdU8oLeQNhZlQCUnazDny7YrfM2uK8Hh+fDTopUBavuOfwuH+4xlB5QdP5vEU69xdfaAMOONT8fQg012UY1CNGuV1HxraK3UGw6XEhm+BveYw0igNWh3OyJD6fD1WqF+EG7glUeYJdFEWsQe6I1WTG8BdjVMn6JB8DNvXTjY12R2X9HnDMCqNPqSxmCebl6UWatFHgwmdtdl4XzoGcyrHav3rp3IXLRqEq9SEqf5qQq3X8xao+UjstyEvlwNgZglNLePMX9FJ1e203cLDEn9CYfvKgdTLqgaWsDKa6NM4xkbol/SCheyiBek4+8zh04yz4sUP0WMNN9sHHywrNk0bR8C+jpYbDcXBZAEWGWTM5vAHMiSzGAzAH8i4aAdM46GgSI7lrAw5zJKdSrvLRJSmtc9tWprNUXm6z3akH29N0sE5CdELsYI7hse90BPvt1OABOjiFlXFeA338WNpCgxSGAL9qnzUo7gK+ANp+Cl0BfC0J9bmXTEEioHi4fc+S2GUAgNAZQ7zWJI7cN8QkAPrvfDGDYaxrHZMcMwFW4u7VBV3fBKaBs/wZgNrZJLEB1WUavTDBN3wFeWcD8HUDmwxkDPCkWYWg4KyjMQEKyhtVoYVGnFhoBA0hTdwQEmLJUwYTA0BzRuDKVAEzRNS2M/AwYF20KX6HTjBQcugc5jYELtD74j4C1b5kBAGaIQ0dHou7ihnhjCuBrAiqOABHqPwiIWSNePEQ6kEgDhYTUNCNRoEmaVF3jsvXEcSmU0zG97D10GQOcBu3eJjAMwOZjt9ylAIEF9ktiMWg9IbTmZLvT/dirhI08ZLTx2BaYNqxKHAl+2EgbWtyatJcafAyJbz555rHvOePTb77atP77cv3/gH8Wkk7NciByTQAAAABJRU5ErkJggg==", //
-        VERSION = "0.7d",//
+        VERSION = "0.7e",//
         alertIcon,
         config = {
             color: {
@@ -49,42 +49,6 @@ var inquirer = inquirer || new function () {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
-    }
-    function objectResumeText(obj) {
-        var r, k, v;
-        if (obj === null)
-            return "<null>";
-        if (obj === undefined)
-            return "<undefined>";
-        switch (typeof obj) {
-            case "string":
-                if (obj.length < 200)
-                    return '"' + obj + '"';
-                else
-                    return '"' + obj.substr(0, 200) + "...";
-            case "function":
-                return "function";
-            case "object":
-                r = "";
-                if (obj instanceof HTMLElement)
-                    r += "<" + obj.tagName + ">:: ";
-                else if (obj instanceof HTMLDocument)
-                    r += "DOCUMENT:: ";
-                else if (obj instanceof Window)
-                    r += "WINDOW:: ";
-                r += "{\n";
-                for (k in obj) {
-                    r += k + ":" + objectResumeText(obj[k]) + ",\n";
-                    if (r.length > 400) {
-                        r += " ...";
-                        break;
-                    }
-                }
-                r += "}";
-                return r;
-            default:
-                return "" + obj;
-        }
     }
 
     function objectResumeLink(obj) {
@@ -121,36 +85,44 @@ var inquirer = inquirer || new function () {
             rtp = rtd[i];
             if (!rtp)
                 continue;
-            p = document.createElement("span");
-            p.data = rtp;
-            if (rtp.c)
-                p.style.color = rtp.c;
-            p.innerText = rtp.v;
-            r.appendChild(p);
+            if (rtp instanceof Node)
+                r.appendChild(rtp);
+            else {
+                p = document.createElement("span");
+                p.data = rtp;
+                if (rtp.c)
+                    p.style.color = rtp.c;
+                p.innerText = rtp.v;
+                r.appendChild(p);
+            }
         }
         return r;
     }
 
     /** expandable object resume */
-    function compactObject(co) {
-        var r, f, m, d;
+    function compactObject(m, d) {
+        var r, f, mn, dn;
         r = document.createElement("span");
         f = document.createElement("span");
-        m = formatter(co.m);
-        d = formatter(co.d);
+        mn = formatter(m);
         function open() {
             f.innerText = "▼ ";
-            if (r.contains(m))
-                r.removeChild(m);
-            r.appendChild(d);
+            if (r.contains(mn))
+                r.removeChild(mn);
+            if (dn == null) {
+                if (typeof d === "function")
+                    d = d();
+                dn = formatter(d);
+            }
+            r.appendChild(dn);
             f.onclick = close;
             return r;
         }
         function close() {
             f.innerText = "▶︎ ";
-            if (r.contains(d))
-                r.removeChild(d);
-            r.appendChild(m);
+            if (r.contains(dn))
+                r.removeChild(dn);
+            r.appendChild(mn);
             f.onclick = open;
             return r;
         }
@@ -176,13 +148,53 @@ var inquirer = inquirer || new function () {
     }
 
     /** formatice object resume */
-    function objectResume(o) {
-        return [];
+    function objectResume(obj) {
+        var r = [], k, max = 10, first = true;
+        if (Array.isArray(obj))
+            r.push({ c: config.color.normal, v: "Array (" + obj.length + ")" });
+        else {
+            if (obj.constructor)
+                r.push({ c: config.color.normal, v: functionName(obj.constructor) + " " });
+            r.push({ c: config.color.normal, v: "{" });
+            for (k in obj) {
+                if (max-- <= 0) {
+                    r.push({ c: config.color.normal, v: "..." });
+                    break;
+                }
+                if (first)
+                    first = false;
+                else
+                    r.push({ c: config.color.normal, v: ", " });
+                r.push({ c: config.color.keyword, v: k });
+            }
+            r.push({ c: config.color.normal, v: "}" });
+        }
+        return r;
     }
 
     /** foramtice object details */
-    function objectDetails(o) {
-        return [];
+    function objectDetails(obj) {
+        return function () {
+            var r = [], k, d;
+            if (Array.isArray(obj))
+                r.push({ c: config.color.normal, v: "Array (" + obj.length + ") [" });
+            else {
+                if (obj.constructor)
+                    r.push({ c: config.color.normal, v: functionName(obj.constructor) + " " });
+                r.push({ c: config.color.normal, v: "{" });
+            }
+            for (k in obj) {
+                r.push(d = document.createElement("div"));
+                d.appendChild(formatter([
+                    { c: config.color.keyword, v: k },
+                    { c: config.color.normal, v: ": " },
+                    objectRow(obj[k])
+                ]))
+                d.style.paddingLeft = "8px";
+            }
+            r.push({ c: config.color.normal, v: Array.isArray(obj) ? "]" : "}" });
+            return r;
+        };
     }
 
     /** return the function name */
@@ -200,7 +212,7 @@ var inquirer = inquirer || new function () {
     /** Advanced way to show object on screen */
     function objectRow(obj, full, expanded) {
         var row, robj;
-        row = document.createElement("div");
+        row = document.createElement("span");
         if (obj === null)
             row.innerText = "<null>";
         else if (obj === undefined)
@@ -226,23 +238,16 @@ var inquirer = inquirer || new function () {
                 ]));
                 break;
             case "function":
-                row.appendChild(robj = compactObject({
-                    m: [
-                        { c: config.color.keyword, v: "function" },
-                        obj.name ? { c: config.color.normal, v: " " + functionName(obj) } : null,
-                        { c: config.color.normal, v: "() {...}" },
-                    ],
-                    d: functionDetails(obj)
-                }));
+                row.appendChild(robj = compactObject([
+                    { c: config.color.keyword, v: "function" },
+                    obj.name ? { c: config.color.normal, v: " " + functionName(obj) } : null,
+                    { c: config.color.normal, v: "() {...}" },
+                ],
+                    functionDetails(obj)
+                ));
                 break;
             case "object":
-                row.appendChild(robj = compactObject({
-                    m: [
-                        obj.constructor ? { c: config.color.normal, v: functionName(obj.constructor) + " " } : null,
-                        { c: config.color.normal, v: "{...}" },
-                    ],
-                    d: objectDetails(obj)
-                }));
+                row.appendChild(robj = compactObject(objectResume(obj), objectDetails(obj)));
                 break;
             default:
                 row.innerText = obj;
@@ -451,13 +456,13 @@ var inquirer = inquirer || new function () {
                             d.style.paddingBottom = "3px";
                             break;
                         case 'o':
-                            d.appendChild(objectResumeLink(object));
+                            d.appendChild(objectRow(object));
                             d.style.borderBottom = "1px solid #EEE";
                             head.appendChild(document.createTextNode("<"));
                             head.style.color = "#DDD";
                             break;
                         case 'e':
-                            d.appendChild(objectResumeLink(object));
+                            d.appendChild(objectRow(object));
                             head.appendChild(document.createTextNode("!"));
                             head.style.color = "#F88";
                             d.style.background = "#FEE";
@@ -572,7 +577,7 @@ var inquirer = inquirer || new function () {
      * @param {*} object Any object to inspect
      */
     function openInspector(object) {
-        var wid, win, wwidth = 250, wheight = 300, panel;
+        var wid, win, wwidth = 450, wheight = 400, panel;
         wid = "inspector_" + uuid();
         win = merger.ui.window(wid, {
             title: "Inspector",
