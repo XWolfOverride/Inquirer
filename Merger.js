@@ -29,6 +29,16 @@ var merger = new function () {
             _type: "system",
             icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
             ver: "0.3e",
+            internal: {
+                window: {
+                    frame: {
+                        left: 5,
+                        right: 5,
+                        top: 25,
+                        bottom: 5,
+                    }
+                }
+            },
             color: {
                 frame: "teal", //"orange"
                 client: "white",
@@ -40,8 +50,12 @@ var merger = new function () {
             icons: {},
         };
 
+    // Pre-calculate system values
+    sys.internal.window.frame.xdelta = sys.internal.window.frame.left + sys.internal.window.frame.right;
+    sys.internal.window.frame.ydelta = sys.internal.window.frame.top + sys.internal.window.frame.bottom;
+
     //=== Merger Core Framework
-    //=============================================================================================
+    //=============================================================================================    
 
 	/**
 	 * Merge method the root of all merger framework
@@ -458,6 +472,17 @@ var merger = new function () {
             core.getDesktop().appendChild(win);
     }
 
+    /** Advanced application window creation */
+    MergerApplication.prototype.getOrCreateWindow = function (id, creator) {
+        var win;
+        win = this.windows[id];
+        if (!win) {
+            win = window(id, creator());
+            this.addWindow(win);
+        }
+        return win;
+    }
+
     /** Remove window from application */
     MergerApplication.prototype.removeWindow = function (win) {
         if (!this.windows[win.getId()])
@@ -638,6 +663,78 @@ var merger = new function () {
                 a = a.parentControl;
             return a;
         }
+        c.setDock = function (dock) {
+            this.dock = dock;
+            if (this.parent && this.parent.layoutChilds)
+                this.parent.layoutChilds();
+        }
+        c.setAutoSize = function (autoSize) {
+            this.autoSize = autoSize;
+            if (this.parent && this.parent.layoutChilds)
+                this.parent.layoutChilds();
+        }
+        c.getPreferedSize = function (e) {
+            if (this.autoSize) {
+                if (e._sizecache && e._sizecache[id])
+                    return e._sizecache[id];
+                var i, c, sz = { width: 0, height: 0 }, cps;
+                for (i in this.content) {
+                    c = this.content[i];
+                    cps = c.getPreferedSize();
+                    if (c.x + cps.width > sz.width)
+                        sz.width = c.x + cps.width;
+                    if (c.y + cps.height > sz.height)
+                        sz.height = c.y + cps.height;
+                }
+                if (!e._sizecache)
+                    e._sizecache = {};
+                if (!e._sizecache[id])
+                    e._sizecache[id] = sz;
+                return sz;
+            } else
+                return { width: this.width, height: this.height };
+        }
+        c.getBounds = function (e) {
+            var d = typeof this.dock === "string" && this.dock.length > 0 ? this.dock[0].toLowerCase() : "", bounds = {}, ps;
+            if (d === "c")
+                return bounds;
+            ps = this.getPreferedSize();
+            if (d === "l" || d === "r" || !d) {
+                bounds.left = this.x;
+                bounds.width = ps.width;
+                bounds.right = this.x + ps.width;
+            }
+            if (d === "t" || d === "b" || !d) {
+                bounds.top = this.y;
+                bounds.height = ps.height;
+                bounds.bottom = this.y + ps.height;
+            }
+            return bounds;
+        }
+        c.fitToContent = function () {
+            // take in mind anchor calculations
+        }
+        c.layoutChilds = function () {
+            // For every child
+            // Get child bounds
+            // Fit child on this
+            // Possible getBounds and measure will not be valid as separate methods and will be merged here
+        }
+        c.measure = function (e) {
+            var w, h, b;
+            if (e.mandatory) {
+                w = e.mandatory.width;
+                h = e.mandatory.height;
+            }
+            if (!w || !h) {
+/*                b=this.getBounds();
+                if (!w && b)
+                    w = b.width;
+                if (!h && s)
+                    h = b.height;
+            */            }
+            this.merge({ width: w, height: h });
+        }
         c.merge = function (def) {
             var settings = {}, obj, key, mdata;
             for (key in def) {
@@ -685,7 +782,6 @@ var merger = new function () {
                     els[i].style.zIndex = Number(i) + 1 + (l * 100000);
                 }
             }
-
         }, def));
         if (c.onControlCreate)
             c.onControlCreate();
@@ -882,6 +978,7 @@ var merger = new function () {
                         padding: 0,
                         boxSizing: "content-box",
                         color: "white",
+                        borderRadius: 0,
                     },
                     setText: function (text) {
                         this.innerText = text;
@@ -911,15 +1008,19 @@ var merger = new function () {
         // Window client
         var wc = control("windowclient", "client", {
             content: def.content,
-            style: { position: "relative", margin: "5px" },
+            style: {
+                position: "relative",
+                margin: "5px",
+                //boxShadow: "0 0 1px red",
+            },
             width: dw,
             height: dh,
         });
         def.content = [wt, wc];
         // Window root
         w = control("window", id, core.mkDefinition({
-            width: dw + 10,
-            height: dh + 30,
+            width: dw + sys.internal.window.frame.xdelta,
+            height: dh + sys.internal.window.frame.ydelta,
             setTitle: function (title) {
                 wt.setTitle(title);
             },
@@ -929,6 +1030,14 @@ var merger = new function () {
                 def.top = val;
                 this.top = val;
                 this.style.top = val + "px";
+            },
+            setWidth: function (val) {
+                arguments.callee.super(val);
+                wc.setWidth(val - sys.internal.window.frame.xdelta);
+            },
+            setHeight: function (val) {
+                arguments.callee.super(val);
+                wc.setHeight(val - sys.internal.window.frame.ydelta);
             },
             setVisible: function (vis) {
                 arguments.callee.super(vis);
@@ -944,6 +1053,7 @@ var merger = new function () {
                 backgroundColor: "white",
                 border: "1px solid " + sys.color.frame,
                 boxShadow: "0px 0px 3px rgba(0,0,0,0.5)",
+                borderRadius: "2px",
                 overflow: "hidden",
             },
             close: function () {
@@ -952,6 +1062,12 @@ var merger = new function () {
                     close = this.onClose();
                 if (close === undefined || close)
                     this.hide();
+            },
+            fitToContent: function () {
+                wc.fitToContent();
+            },
+            layoutChilds: function () {
+                wc.layoutChilds();
             },
             onmousedown: function () {
                 this.bringToFront();
@@ -963,6 +1079,14 @@ var merger = new function () {
         w.titlebar = w.content.titlebar;
         w.content = w.client.content;
         return w;
+    }
+
+    /**
+	 * Panel control creation
+	 */
+    function panel(id, def) {
+        var c = control("panel", id, def);
+        return c;
     }
 
 	/**
@@ -1138,7 +1262,7 @@ var merger = new function () {
                 app.removeWindow(w);
             }
         });
-        var w, i, bt, x = def.width;
+        var w, i, bt, x;
         if (buttons) {
             def.content = def.content || [];
             for (i = 0; i < buttons.length; i++)
@@ -1146,20 +1270,42 @@ var merger = new function () {
         }
         w = window(id || randId("dialog"), def);
         app.addWindow(w);
-        for (i = buttons.length - 1; i >= 0; i--) {
-            bt = buttons[i];
-            x -= bt.offsetWidth;
-            bt.merge({
-                top: def.height - bt.offsetHeight,
-                left: x,
-                _user_onClick: bt.onClick,
-                onClick: function () {
-                    app.removeWindow(w);
-                    if (this._user_onClick)
-                        this._user_onClick();
+        w.fitToContent = function () {
+            var bh = 0, bw = 0, i, c, hh, ww;
+            if (def.autoHeight || def.autoWidth) {
+                for (i in w.content) {
+                    c = w.content[i];
+                    if (buttons.indexOf(c) >= 0)
+                        continue;
+                    hh = c.top + c.offsetHeight;
+                    ww = c.left + c.offsetWidth;
+                    if (hh > bh)
+                        bh = hh;
+                    if (ww > bw)
+                        bw = ww;
                 }
-            });
+                if (def.autoHeight)
+                    w.setHeight(hh + (w.height - w.client.height) + (buttons && buttons.length > 0 ? buttons[0].offsetHeight : 0) + 3);
+                if (def.autoWidth)
+                    w.setWidth(ww + (w.width - w.client.width));
+            }
+            x = w.client.width;
+            for (i = buttons.length - 1; i >= 0; i--) {
+                bt = buttons[i];
+                x -= bt.offsetWidth;
+                bt.merge({
+                    top: w.client.height - bt.offsetHeight,
+                    left: x,
+                    _user_onClick: bt.onClick,
+                    onClick: function () {
+                        app.removeWindow(w);
+                        if (this._user_onClick)
+                            this._user_onClick();
+                    }
+                });
+            }
         }
+        w.fitToContent();
         return w;
     }
 
@@ -1173,11 +1319,12 @@ var merger = new function () {
             width: icon ? 360 : 300,
             height: height || 75,
             content: [
-            ]
+            ],
+            autoHeight: true,
         }, d;
         if (icon)
             def.content.push(
-                picture("pIcon", {
+                picture("icon", {
                     top: 0,
                     left: 0,
                     width: 48,
@@ -1186,15 +1333,15 @@ var merger = new function () {
                 })
             );
         def.content.push(
-            html("htText", {
-                top: 24,
+            html("html", {
+                top: 17,
                 left: icon ? 60 : 0,
                 width: 300,
                 html: text,
             })
         );
         if (!buttons || buttons.length == 0) {
-            buttons = [button("btOk", { text: "Ok" })];
+            buttons = [button("ok", { text: "Ok" })];
         }
         d = dialog(app, null, def, buttons);
         d.show();
@@ -1215,18 +1362,19 @@ var merger = new function () {
         version: sys.ver,
         // -- UI
         ui: {
-            window: window,
+            button: button,
+            checkbox: checkbox,
             dialog: dialog,
             dropdown: dropdown,
             list: list,
             label: label,
-            html: html,
-            textbox: textbox,
-            checkbox: checkbox,
-            button: button,
-            picture: picture,
             menuItem: menuItem,
             menuSeparator: menuSeparator,
+            html: html,
+            panel: panel,
+            picture: picture,
+            textbox: textbox,
+            window: window,
         },
         dialogs: {
             messageBox: dialog_messageBox,

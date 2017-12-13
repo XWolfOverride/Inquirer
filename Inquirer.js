@@ -552,7 +552,7 @@ var inquirer = inquirer || new function () {
                     }),
                     merger.ui.button("pref_save", {
                         top: wheight - 20,
-                        left: wwidth - 25,
+                        left: wwidth - 27,
                         text: "Ok",
                         onClick: function () {
                             inq.autoShow = this.getWindow().content.pref_autoshow.checked;
