@@ -203,10 +203,13 @@ var inquirer = inquirer || new function () {
             return "";
         if (f.name)
             return f.name;
-        var funcNameRegex, results;
+        var funcNameRegex, result;
         funcNameRegex = /function (.{1,})\(/;
-        results = (funcNameRegex).exec(f.toString());//(this).constructor.toString());
-        return (results && results.length > 1) ? results[1] : "";
+        result = (funcNameRegex).exec(f.toString());//(this).constructor.toString());
+        result = (result && result.length > 1) ? result[1] : "";
+        if (result.length && result.length > 128)
+            result = "";
+        return result;
     }
 
     /** Advanced way to show object on screen */
@@ -219,10 +222,10 @@ var inquirer = inquirer || new function () {
             row.innerText = "<undefined>";
         else switch (typeof obj) {
             case "string":
-                if (!full && obj.length > 200)
+                if (!full && obj.length > 512)
                     row.appendChild(formatter([
                         { c: config.color.normal, v: '"' },
-                        { c: config.color.string, v: obj.substr(0, 200) },
+                        { c: config.color.string, v: obj.substr(0, 512) },
                         { c: config.color.normal, v: '..."' },
                     ]))
                 else
@@ -480,7 +483,7 @@ var inquirer = inquirer || new function () {
                     if (code == null || typeof code != "string" || code.length < 1)
                         return;
                     this.conhis.add(code);
-                    var err, obj;
+                    var obj;
                     this.log('i', code);
                     try {
                         obj = eval('(' + code + ')');
