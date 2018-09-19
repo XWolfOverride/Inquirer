@@ -5,8 +5,6 @@ MY_PATH="`dirname \"$0\"`"
 NOW=`date`
 cd "$MY_PATH"
 echo ">>> $NOW" >> inquirer.log.txt
-echo " Updating code" >> inquirer.log.txt
-git pull >>inquirer.log.txt 2>&1
 echo " Writing header" >> inquirer.log.txt
 echo "Starting minification"
 echo "//Inquirer Minified file (C) XWolfOverride 2016"> inquirer.min.js
