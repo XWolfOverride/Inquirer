@@ -90,7 +90,7 @@ var inquirer = inquirer || new function () {
         f = document.createElement("span");
         mn = formatter(m);
         function icon(angle){
-            return "<svg height='10' width='10' transform='rotate("+angle+")'style='vertical-align:middle'><circle cx='5' cy='5' r='4' stroke='black' stroke-width='1.1' fill='white' /><polygon points='4,3 6.5,5 4,7' fill='black' /></svg>";
+            return "<svg height='10' width='10' style='vertical-align:middle'><circle cx='5' cy='5' r='4' stroke='black' stroke-width='1.1' fill='white' /><polygon transform='rotate("+angle+" 5 5)' points='4,3 6.5,5 4,7' fill='black' /></svg>";
         }
         function open() {
             f.innerHTML = icon(90);
@@ -117,9 +117,6 @@ var inquirer = inquirer || new function () {
         r.appendChild(f);
         r.close = close;
         r.open = open;
-        r.onmousedown = function () {
-            f.innerHTML = icon(45);
-        }
         close();
         return r;
     }
