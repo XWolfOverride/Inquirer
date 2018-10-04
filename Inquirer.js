@@ -69,10 +69,13 @@ var inquirer = inquirer || new function () {
                     p.style.color = rtp.c;
                 if (rtp.s)
                     p.style.fontSize = rtp.s;
-                p.innerText = rtp.v;
+                if (rtp.v)
+                    p.innerText = rtp.v;
+                if (rtp.h)
+                    p.innerHTML = rtp.h;
                 if (rtp.onclick) {
                     p.onclick = rtp.onclick;
-                    p.style.textDecoration = "underline";
+                    //p.style.textDecoration = "underline";
                     p.style.cursor = "pointer";
                 }
                 if (rtp.tooltip)
@@ -89,8 +92,8 @@ var inquirer = inquirer || new function () {
         r = document.createElement("span");
         f = document.createElement("span");
         mn = formatter(m);
-        function icon(angle){
-            return "<svg height='10' width='10' style='vertical-align:middle'><circle cx='5' cy='5' r='4' stroke='black' stroke-width='1.1' fill='white' /><polygon transform='rotate("+angle+" 5 5)' points='4,3 6.5,5 4,7' fill='black' /></svg>";
+        function icon(angle) {
+            return "<svg height='10' width='10' style='vertical-align:middle'><circle cx='5' cy='5' r='4' stroke='gray' stroke-width='1.1' fill='white' /><polygon transform='rotate(" + angle + " 5 5)' points='4,3 6.5,5 4,7' fill='black' />#</svg>";
         }
         function open() {
             f.innerHTML = icon(90);
@@ -223,7 +226,8 @@ var inquirer = inquirer || new function () {
                     row.appendChild(formatter([
                         { c: config.color.normal, v: '"' },
                         { c: config.color.string, v: obj.substr(0, 512) },
-                        { c: config.color.normal, v: '…"' },
+                        { c: config.color.normal, v: '…', onclick: function () { openInspector(obj); } },
+                        { c: config.color.normal, v: '"' },
                     ]))
                 else
                     row.appendChild(formatter([
@@ -260,25 +264,13 @@ var inquirer = inquirer || new function () {
 
     function inspectorLink(object) {
         return {
-            c: config.color.normal,
-            v: "※",//○※
+            c: config.color.gray,
+            h: "<svg height='10' width='10' style='vertical-align:middle'><circle cx='4' cy='3.5' r='3' stroke='#DDD' stroke-width='1' fill='white' /><polygon points='5,6 8,10 9,8 6,5' fill='#DDD' />%</svg>",
             onclick: function () {
                 openInspector(object);
             },
             tooltip: "Show on variable inspector"
         }
-        var lnk = document.createElement("IMG");
-        lnk.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABBElEQVQ4T6XTvyvFURjH8delGJTJoMRA+bGIjDax2cxS18Km5B+wyGJQDP4C/gKlsCgTBgMSokh2g0U6Om7H1/1+u9c96/k87/N5Ps9zSho8pQbr5QE6MIon3OIz76EsoBVrWKICP8Us7qpBsoANzGMFx+jBOtqjo/csJAUE229YwE4i7MQDlrFdBJjCAfpj36n2HBfR3S9G6mAA15jEYaJqxgu2sFrkoAknaME0XhGKN1HGCG6KAOGuD/voxhW6YoAhvEVcRpcVTrU9aMMcxvCIPQxjN4Y8EeHfkFo3cTCONUwktDaO+3oAQTuEI5xhBh/1AoK+F88/xf8B/NnmWjPI/bRf61ssEdnALW4AAAAASUVORK5CYII=";
-        lnk.style.merge({
-            verticalAlign: "middle",
-            cursor: "pointer",
-            width: "8px",
-            height: "8px"
-        });
-        lnk.onclick = function () {
-            openInspector(object);
-        };
-        return lnk;
     }
 
     // Methods
