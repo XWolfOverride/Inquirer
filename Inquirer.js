@@ -85,14 +85,15 @@ var inquirer = inquirer || new function () {
 
     /** expandable object resume */
     function compactObject(m, d) {
-        var r, f, mn, dn, s;
+        var r, f, mn, dn;
         r = document.createElement("span");
         f = document.createElement("span");
-        f.innerHTML = "<svg height='10' width='10' style='vertical-align:middle'><circle cx='5' cy='5' r='4' stroke='black' stroke-width='1.1' fill='white' /><polygon points='4,3 6.5,5 4,7' fill='black' /></svg>";
-        s = f.firstChild;
         mn = formatter(m);
+        function icon(angle){
+            return "<svg height='10' width='10' transform='rotate("+angle+")'style='vertical-align:middle'><circle cx='5' cy='5' r='4' stroke='black' stroke-width='1.1' fill='white' /><polygon points='4,3 6.5,5 4,7' fill='black' /></svg>";
+        }
         function open() {
-            s.setAttribute("transform", "rotate(90)")
+            f.innerHTML = icon(90);
             if (r.contains(mn))
                 r.removeChild(mn);
             if (dn == null) {
@@ -105,7 +106,7 @@ var inquirer = inquirer || new function () {
             return r;
         }
         function close() {
-            s.setAttribute("transform", "rotate(0)");
+            f.innerHTML = icon(0);
             if (r.contains(dn))
                 r.removeChild(dn);
             r.appendChild(mn);
@@ -117,7 +118,7 @@ var inquirer = inquirer || new function () {
         r.close = close;
         r.open = open;
         r.onmousedown = function () {
-            s.setAttribute("transform", "rotate(45)");
+            f.innerHTML = icon(45);
         }
         close();
         return r;
