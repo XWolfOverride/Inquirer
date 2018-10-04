@@ -1,6 +1,6 @@
 /*
  * Web Inquirer V 0.7f
- * Copyright 2016 XWolfOverride@gmail.com
+ * Copyright 2016-2018 XWolfOverride@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -348,12 +348,14 @@ var inquirer = inquirer || new function () {
                 title: "Console",
                 width: wwidth,
                 height: wheight,
+                resizable: true,
                 content: [
                     merger.ui.html("Hconsole", {
                         top: 0,
                         left: 0,
                         width: wwidth,
                         height: wheight - (inputHeight - 5),
+                        anchor: "TRBL",
                         style: {
                             overflow: "scroll",
                         },
@@ -361,9 +363,10 @@ var inquirer = inquirer || new function () {
                     merger.ui.textbox("Tinput", {
                         top: wheight - (inputHeight - 5),
                         left: -5,
-                        width: wwidth + 10,
+                        width: wwidth + 5,
                         height: inputHeight,
                         placeholder: "javascript code here",
+                        anchor: "LBR",
                         //multiple: true,
                         style: {
                             whiteSpace: "pre",
@@ -580,26 +583,29 @@ var inquirer = inquirer || new function () {
      * @param {*} object Any object to inspect
      */
     function openInspector(object) {
-        var wid, win, wwidth = 450, wheight = 400, panel;
+        var wid, win, wwidth = 600, wheight = 500, panel;
         wid = "inspector_" + uuid();
         win = merger.ui.window(wid, {
             title: "Inspector",
             width: wwidth,
             height: wheight,
+            resizable: true,
             content: [
                 panel = merger.ui.html("panel", {
                     top: 0,
                     left: 0,
                     width: wwidth,
                     height: wheight - 25,
+                    anchor: "TBRL",
                     style: {
                         overflow: "scroll",
                     },
                 }),
-                merger.ui.button("pref_save", {
+                merger.ui.button("insp_close", {
                     top: wheight - 20,
-                    left: wwidth - 25,
+                    left: wwidth - 27,
                     text: "Ok",
+                    anchor: "BR",
                     onClick: function () {
                         this.getWindow().close();
                     }
