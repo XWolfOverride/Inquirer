@@ -409,6 +409,8 @@ var merger = new function () {
      * Tool to merge control definition preserving style
      */
     MergerCore.prototype.mkDefinition = function (a, b) {
+        if (!b)
+            return a;
         if (a.style)
             b.style = a.style.merge(b.style);
         return a.merge(b);
@@ -620,19 +622,19 @@ var merger = new function () {
                 aleft = anchor.indexOf("L") >= 0;
                 if (dw) {
                     if (!aleft && aright)
-                        child.setLeft(child.left + dw);
+                        child.setLeft(child._left + dw);
                     else if (aleft && aright)
-                        child.setWidth(child.width + dw);
+                        child.setWidth(child._width + dw);
                     else if (!aleft && !aright)
-                        child.setLeft(child.left + dw / 2);
+                        child.setLeft(child._left + dw / 2);
                 }
                 if (dh) {
                     if (!atop && abottom)
-                        child.setTop(child.top + dh);
+                        child.setTop(child._top + dh);
                     else if (atop && abottom)
-                        child.setHeight(child.height + dh);
+                        child.setHeight(child._height + dh);
                     else if (!atop && !abottom)
-                        child.setTop(child.top + dh / 2);
+                        child.setTop(child._top + dh / 2);
                 }
             }
         }
@@ -647,20 +649,24 @@ var merger = new function () {
         }
         c.setTop = function (val) {
             this.top = val;
+            this._top = val;
             this.style.top = val + "px";
         }
         c.setLeft = function (val) {
             this.left = val;
+            this._left = val;
             this.style.left = val + "px";
         }
         c.setWidth = function (val) {
             updateLayout(val - this.width, 0);
             this.width = val;
+            this._width = val;
             this.style.width = val + "px";
         }
         c.setHeight = function (val) {
             updateLayout(0, val - this.height);
             this.height = val;
+            this._height = val;
             this.style.height = val + "px";
         }
         c.setVisible = function (val) {
