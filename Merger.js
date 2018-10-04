@@ -1,6 +1,6 @@
 /*
- * Merger UI V0.3
- * Copyright 2016 XWolfOverride@gmail.com
+ * Merger UI V0.4
+ * Copyright 2016-2018 XWolfOverride@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -28,7 +28,7 @@ var merger = new function () {
         sys = { // Configuration
             _type: "system",
             icon: "data:image/gif;base64,R0lGODlhIAAgAOMAAP///zOZ/47N8FxqpgAAAMzM/7+/v9nu+QBjpAA9hP///////////////////////yH5BAEKAA8ALAAAAAAgACAAAATq8MlJH7k16y3JEQXGjZVXBGBIkKQpoEIqsuVRxHAsr3Rn6zndjuYCCo8F1ahoPCJDG2bTKbTxKNIpVWAbXH03atDZ9ZYKh49zXC0M3l/LKZA+Bthc99uMnd/rLzhBZXtxBH53dGpAKISFZ4mJCIpHjo99kQGTiWmdbgkJe3AGmJKZdwUPem+ghQavHX6bpyABoqyhBK+wh3ezpwGrtwMJurtymsCRwsPGpHK/ysyizhME0dLDo7DWBMqZ017HFQYX36jN4xrl3tnU6hzswMLVPfLLrtw9EvfB28/7KMhzUy9gBnYFDa6DtyECADs=",
-            ver: "0.3e",
+            ver: "0.4",
             internal: {
                 window: {
                     frame: {
@@ -99,7 +99,7 @@ var merger = new function () {
                     if (DragNDrop.dragging())
                         DragNDrop.update(e.clientX, e.clientY);
                 });
-                dsk.addEventListener("click", function (e) {
+                dsk.addEventListener("click", function () {
                     if (menuCurrent) {
                         menuCurrent.close(true);
                         menuCurrent = undefined;
@@ -109,6 +109,10 @@ var merger = new function () {
                         menuToShow = undefined;
                     }
                 });
+                dsk.addEventListener("mouseup", function () {
+                    if (DragNDrop.dragging())
+                        DragNDrop.drop();
+                })
             }
             return dsk;
         }
@@ -558,28 +562,32 @@ var merger = new function () {
 	 * Drag'N'Drop system
 	 */
     var DragNDrop = new (function () {
-        var item, point;
+        var item, point, onupd;
         this.merge({
-            drag: function (i, x, y) {
+            drag: function (i, x, y, onUpdate) {
                 if (item)
                     this.drop();
                 item = i;
                 point = { x: x, y: y };
+                onupd = onUpdate;
             },
             drop: function (ctl) {
-                if (!ctl)
+                if (!ctl || item == ctl) {
                     item = null;
-                else if (item == ctl)
-                    item = null;
+                    onpud = null;
+                }
             },
             dragging: function () {
                 return item ? true : false;
             },
             update: function (x, y) {
-                item.merge({
-                    top: y - point.y,
-                    left: x - point.x,
-                })
+                if (onupd)
+                    onupd(x - point.x, y - point.y, x, y, point.x, point.y);
+                else
+                    item.merge({
+                        top: y - point.y,
+                        left: x - point.x,
+                    })
             }
         });
     })();
@@ -593,6 +601,42 @@ var merger = new function () {
     function control(type, id, def, c) {
         if (!c)
             c = core.mkTag("div");
+        // Private section
+        function getMeta() {
+            if (!c._meta)
+                c._meta = {};
+            return c._meta;
+        }
+        function updateLayout(dw, dh) {
+            if (getMeta()._layoutSuspended || (!dw && !dh))
+                return;
+            var i, atop, aright, abottom, aleft;
+            for (i in c.content) {
+                var child = c.content[i];
+                var anchor = child.anchor || "TL";
+                atop = anchor.indexOf("T") >= 0;
+                aright = anchor.indexOf("R") >= 0;
+                abottom = anchor.indexOf("B") >= 0;
+                aleft = anchor.indexOf("L") >= 0;
+                if (dw) {
+                    if (!aleft && aright)
+                        child.setLeft(child.left + dw);
+                    else if (aleft && aright)
+                        child.setWidth(child.width + dw);
+                    else if (!aleft && !aright)
+                        child.setLeft(child.left + dw / 2);
+                }
+                if (dh) {
+                    if (!atop && abottom)
+                        child.setTop(child.top + dh);
+                    else if (atop && abottom)
+                        child.setHeight(child.height + dh);
+                    else if (!atop && !abottom)
+                        child.setTop(child.top + dh / 2);
+                }
+            }
+        }
+        // Public section
         c.setAttribute("merger_type", type);
         c.setAttribute("id", id);
         c.setAttribute("name", id);
@@ -610,10 +654,12 @@ var merger = new function () {
             this.style.left = val + "px";
         }
         c.setWidth = function (val) {
+            updateLayout(val - this.width, 0);
             this.width = val;
             this.style.width = val + "px";
         }
         c.setHeight = function (val) {
+            updateLayout(0, val - this.height);
             this.height = val;
             this.style.height = val + "px";
         }
@@ -663,15 +709,8 @@ var merger = new function () {
                 a = a.parentControl;
             return a;
         }
-        c.setDock = function (dock) {
-            this.dock = dock;
-            if (this.parent && this.parent.layoutChilds)
-                this.parent.layoutChilds();
-        }
         c.setAutoSize = function (autoSize) {
             this.autoSize = autoSize;
-            if (this.parent && this.parent.layoutChilds)
-                this.parent.layoutChilds();
         }
         c.getPreferedSize = function (e) {
             if (this.autoSize) {
@@ -714,12 +753,13 @@ var merger = new function () {
         c.fitToContent = function () {
             // take in mind anchor calculations
         }
-        c.layoutChilds = function () {
-            // For every child
-            // Get child bounds
-            // Fit child on this
-            // Possible getBounds and measure will not be valid as separate methods and will be merged here
+        c.suspendLayout = function () {
+            getMeta()._layoutSuspended = true;
         }
+        c.resumeLayout = function () {
+            getMeta()._layoutSuspended = false;
+        }
+
         c.measure = function (e) {
             var w, h, b;
             if (e.mandatory) {
@@ -759,11 +799,12 @@ var merger = new function () {
                     this[key] = o.d;
             }
         }
+        c.suspendLayout();
         c.merge(core.mkDefinition({
             style: {
                 position: "absolute",
             },
-            anchor: { top: true, right: false, bottom: false, left: true },
+            anchor: "TL",
             bringToFront: function () {
                 var p, els, i, l;
                 p = this.parentNode;
@@ -785,6 +826,7 @@ var merger = new function () {
         }, def));
         if (c.onControlCreate)
             c.onControlCreate();
+        c.resumeLayout();
         return c;
     }
 
@@ -1011,7 +1053,6 @@ var merger = new function () {
             style: {
                 position: "relative",
                 margin: "5px",
-                //boxShadow: "0 0 1px red",
             },
             width: dw,
             height: dh,
@@ -1032,12 +1073,18 @@ var merger = new function () {
                 this.style.top = val + "px";
             },
             setWidth: function (val) {
-                arguments.callee.super(val);
+                this.width = val;
+                this.style.width = val + "px";
                 wc.setWidth(val - sys.internal.window.frame.xdelta);
             },
             setHeight: function (val) {
-                arguments.callee.super(val);
+                this.height = val;
+                this.style.height = val + "px";
                 wc.setHeight(val - sys.internal.window.frame.ydelta);
+            },
+            setSize: function (w, h) {
+                this.setWidth(w);
+                this.setHeight(h);
             },
             setVisible: function (vis) {
                 arguments.callee.super(vis);
@@ -1047,6 +1094,40 @@ var merger = new function () {
                         this.setTop((document.body.clientHeight - this.height) / 2);
                     if (this.left === undefined)
                         this.setLeft((document.body.clientWidth - this.width) / 2);
+                }
+            },
+            setResizable: function (res) {
+                def.resizable = res;
+                this.resizable = res;
+                if (!res && this.resizeHandler) {
+                    this.removeChild(this.resizeHandler);
+                    this.resizeHandler = null;
+                } else if (res && !this.resizeHandler) {
+                    this.resizeHandler = document.createElement("div");
+                    this.resizeHandler.style.merge({
+                        background: "#EEE",
+                        width: "15px",
+                        height: "15px",
+                        position: "absolute",
+                        right: "0px",
+                        bottom: "0px",
+                        cursor: "nwse-resize"
+                    });
+                    this.resizeHandler.merge({
+                        onmousedown: function (e) {
+                            if (e.offsetY < 1)
+                                return;
+                            DragNDrop.drag(w.resizeHandler, e.offsetX, e.offsetY, function (x, y, mx, my, px, py) {
+                                mx += (15 - px); my += (15 - py);
+                                x = mx - w.offsetLeft, y = my - w.offsetTop;
+                                w.setSize(x, y);
+                            });
+                        },
+                        onmouseup: function (e) {
+                            DragNDrop.drop(this.resizeHandler);
+                        }
+                    });
+                    this.appendChild(this.resizeHandler);
                 }
             },
             style: {
@@ -1066,9 +1147,6 @@ var merger = new function () {
             fitToContent: function () {
                 wc.fitToContent();
             },
-            layoutChilds: function () {
-                wc.layoutChilds();
-            },
             onmousedown: function () {
                 this.bringToFront();
             },
@@ -1077,6 +1155,7 @@ var merger = new function () {
         def.height = dh;
         w.client = w.content.client;
         w.titlebar = w.content.titlebar;
+        w.frameContent = w.content;
         w.content = w.client.content;
         return w;
     }
@@ -1250,7 +1329,7 @@ var merger = new function () {
     }
 
 	/**
-	 * Dialog creation tool 
+	 * Dialog creation tool (Dialog is a window that fits to content)
 	 */
     function dialog(app, id, def, buttons) {
         if (!def)
@@ -1258,6 +1337,7 @@ var merger = new function () {
         def.merge({
             width: def.width || 300,
             height: def.height || 300,
+            resizable: false,
             onClose: function () {
                 app.removeWindow(w);
             }
