@@ -84,6 +84,36 @@
                     height: 80,
                     items: [{ key: "clRed", value: "Red" }, { key: "clBlue", value: "Blue" }, { key: "clGreen", value: "Green" }],
                 }),
+                merger.ui.button("sample_button", {
+                    top: 0,
+                    left: 160,
+                    width: 60,
+                    height: 20,
+                    text: "Button",
+                }),
+                merger.ui.toggleButton("sample_tbutton", {
+                    top: 30,
+                    left: 160,
+                    width: 60,
+                    height: 20,
+                    text: "Toggle",
+                }),
+                merger.ui.toggleButton("sample_tbuttonG1", {
+                    top: 60,
+                    left: 160,
+                    width: 90,
+                    height: 20,
+                    text: "Toggle Group",
+                    group: "G1"
+                }),
+                merger.ui.toggleButton("sample_tbuttonG2", {
+                    top: 90,
+                    left: 160,
+                    width: 90,
+                    height: 20,
+                    text: "Toggle Group",
+                    group: "G1"
+                }),
                 merger.ui.button("Bok", {
                     top: 200 - 20,
                     left: 400 - 35,

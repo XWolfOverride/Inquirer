@@ -1295,6 +1295,71 @@ var merger = new function () {
     }
 
 	/**
+	 * Toggle Button control creation
+	 */
+    function toggleButton(id, def) {
+        var c = control("toggleButton", id, core.mkDefinition({
+            setText: function (text) {
+                this.innerText = text;
+            },
+            style: {
+                border: "0",
+                borderRadius: "7px",
+                background: sys.color.frame,
+                color: sys.color.framecontrast,
+                height: "20px",
+            },
+            onmousedown: function () {
+                this.style.merge({
+                    background: sys.color.framecontrast,
+                    color: sys.color.frame,
+                })
+            },
+            onmouseup: function () {
+                this.style.merge({
+                    background: sys.color.frame,
+                    color: sys.color.framecontrast,
+                })
+            },
+            onmouseleave: function () {
+                this.style.merge({
+                    background: this.selected ? sys.color.selection : sys.color.frame,
+                    color: sys.color.framecontrast,
+                })
+            },
+            getGroupButtons: function () {
+                var group = [], bros = this.getWindow().content, i;
+                for (i in bros) {
+                    var b = bros[i];
+                    if (b._type == "toggleButton" && b.group == this.group)
+                        group.push(b);
+                }
+                return group;
+            }
+        }, def), core.mkTag("button"));
+        c.setText(def.text);
+        c.addEventListener("click", function () {
+            if (this.group) {
+                var grp = this.getGroupButtons(), tb;
+                for (i in grp) {
+                    var tb = grp[i];
+                    if (tb.selected) {
+                        tb.selected = false;
+                        tb.style.background = sys.color.frame;
+                    }
+                }
+                this.selected = true;
+            } else
+                this.selected = !this.selected;
+
+            this.style.background = this.selected ? sys.color.selection : sys.color.frame;
+            if (this.onClick)
+                this.onClick.apply(this, arguments)
+        }, false);
+        return c;
+    }
+
+	/**
 	 * DropDown control creation
 	 */
     function dropdown(id, def, listMode) {
@@ -1449,6 +1514,7 @@ var merger = new function () {
         // -- UI
         ui: {
             button: button,
+            toggleButton: toggleButton,
             checkbox: checkbox,
             dialog: dialog,
             dropdown: dropdown,
