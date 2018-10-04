@@ -207,6 +207,8 @@ var inquirer = inquirer || new function () {
         funcNameRegex = /function (.{1,})\(/;
         result = (funcNameRegex).exec(f.toString());//(this).constructor.toString());
         result = (result && result.length > 1) ? result[1] : "";
+        if (result.indexOf("{") >= 0)
+            result = result.substr(0, result.indexOf("{"));
         if (result.length && result.length > 128)
             result = "";
         return result;
