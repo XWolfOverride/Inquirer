@@ -1,5 +1,5 @@
 /*
- * Web Inquirer V 0.7f
+ * Web Inquirer V 0.7g
  * Copyright 2016-2018 XWolfOverride@gmail.com
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
@@ -24,7 +24,7 @@ var inquirer = inquirer || new function () {
 
     var icon = "data:image/gif;base64,R0lGODlhIAAgAKECADIyMjMzM////////yH5BAEKAAIALAAAAAAgACAAAAJulI8Zke2PFoC0LlZzW7qf633XGGHeiJqcaKWgsQov5JLvTNeYq+kM36vBUJNgaujDiVDIpLK58ylIiiU0NjWVZscHgAuUUXPOpfbhjD1bwmFIrHsvv+3Qrd4Byzda7N7h9zclmEOIFmgolgj4VgAAOw==", //
         bugico = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAWlBMVEUkJSMuMC01NzQ+Pz1HSEZPUU5YWldfYV5pa2h6e3iOkI2YmpeipKGpq6ifwFWqxma4urezzHa50YHJy8jC1pLL3aLS4K3a3NnZ5rvo6+fn8NXv8+L19/D9//y9fxQqAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+EBBAwFN28edE4AAABVaVRYdENvbW1lbnQAAAAAAENvcHlyaWdodCBJTkNPUlMgR21iSCAod3d3Lmljb25leHBlcmllbmNlLmNvbSkgLSBVbmxpY2Vuc2VkIHByZXZpZXcgaW1hZ2VYrophAAAC6UlEQVRYw+2X2barIAxA0U5qK2jFAor//5uXSUUS2q5z1n07vNhC2JCYSbL8cpA/wAeAGswQPwc0xI3qO4BWcPVs95/gvNYQIAhpgGBtATcw3RLSpgBtRYdU8oLeQNhZlQCUnazDny7YrfM2uK8Hh+fDTopUBavuOfwuH+4xlB5QdP5vEU69xdfaAMOONT8fQg012UY1CNGuV1HxraK3UGw6XEhm+BveYw0igNWh3OyJD6fD1WqF+EG7glUeYJdFEWsQe6I1WTG8BdjVMn6JB8DNvXTjY12R2X9HnDMCqNPqSxmCebl6UWatFHgwmdtdl4XzoGcyrHav3rp3IXLRqEq9SEqf5qQq3X8xao+UjstyEvlwNgZglNLePMX9FJ1e203cLDEn9CYfvKgdTLqgaWsDKa6NM4xkbol/SCheyiBek4+8zh04yz4sUP0WMNN9sHHywrNk0bR8C+jpYbDcXBZAEWGWTM5vAHMiSzGAzAH8i4aAdM46GgSI7lrAw5zJKdSrvLRJSmtc9tWprNUXm6z3akH29N0sE5CdELsYI7hse90BPvt1OABOjiFlXFeA338WNpCgxSGAL9qnzUo7gK+ANp+Cl0BfC0J9bmXTEEioHi4fc+S2GUAgNAZQ7zWJI7cN8QkAPrvfDGDYaxrHZMcMwFW4u7VBV3fBKaBs/wZgNrZJLEB1WUavTDBN3wFeWcD8HUDmwxkDPCkWYWg4KyjMQEKyhtVoYVGnFhoBA0hTdwQEmLJUwYTA0BzRuDKVAEzRNS2M/AwYF20KX6HTjBQcugc5jYELtD74j4C1b5kBAGaIQ0dHou7ihnhjCuBrAiqOABHqPwiIWSNePEQ6kEgDhYTUNCNRoEmaVF3jsvXEcSmU0zG97D10GQOcBu3eJjAMwOZjt9ylAIEF9ktiMWg9IbTmZLvT/dirhI08ZLTx2BaYNqxKHAl+2EgbWtyatJcafAyJbz555rHvOePTb77atP77cv3/gH8Wkk7NciByTQAAAABJRU5ErkJggg==", //
-        VERSION = "0.7f#",//
+        VERSION = "0.7g",//
         alertIcon,
         config = {
             color: {
@@ -150,11 +150,13 @@ var inquirer = inquirer || new function () {
     /** formatice object resume */
     function objectResume(obj) {
         var r = [], k, max = 10, first = true;
-        if (Array.isArray(obj))
+        if (Array.isArray(obj)) {
             r.push({ c: config.color.normal, v: "Array (" + obj.length + ")" });
-        else {
+            r.push(inspectorLink(obj));
+        } else {
             if (obj.constructor)
                 r.push({ c: config.color.normal, v: functionName(obj.constructor) + " " });
+            r.push(inspectorLink(obj));
             r.push({ c: config.color.normal, v: "{" });
             for (k in obj) {
                 if (max-- <= 0) {
@@ -176,11 +178,14 @@ var inquirer = inquirer || new function () {
     function objectDetails(obj) {
         return function () {
             var r = [], k, d;
-            if (Array.isArray(obj))
-                r.push({ c: config.color.normal, v: "Array (" + obj.length + ") [" });
-            else {
+            if (Array.isArray(obj)) {
+                r.push({ c: config.color.normal, v: "Array (" + obj.length + ")" });
+                r.push(inspectorLink(obj));
+                r.push({ c: config.color.normal, v: "[" });
+            } else {
                 if (obj.constructor)
                     r.push({ c: config.color.normal, v: functionName(obj.constructor) + " " });
+                r.push(inspectorLink(obj));
                 r.push({ c: config.color.normal, v: "{" });
             }
             for (k in obj) {
@@ -259,6 +264,19 @@ var inquirer = inquirer || new function () {
         if (expanded)
             robj.open();
         return row;
+    }
+
+    function inspectorLink(object) {
+        var lnk = document.createElement("IMG");
+        lnk.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABBElEQVQ4T6XTvyvFURjH8delGJTJoMRA+bGIjDax2cxS18Km5B+wyGJQDP4C/gKlsCgTBgMSokh2g0U6Om7H1/1+u9c96/k87/N5Ps9zSho8pQbr5QE6MIon3OIz76EsoBVrWKICP8Us7qpBsoANzGMFx+jBOtqjo/csJAUE229YwE4i7MQDlrFdBJjCAfpj36n2HBfR3S9G6mAA15jEYaJqxgu2sFrkoAknaME0XhGKN1HGCG6KAOGuD/voxhW6YoAhvEVcRpcVTrU9aMMcxvCIPQxjN4Y8EeHfkFo3cTCONUwktDaO+3oAQTuEI5xhBh/1AoK+F88/xf8B/NnmWjPI/bRf61ssEdnALW4AAAAASUVORK5CYII=";
+        lnk.style.merge({
+            verticalAlign: "middle",
+            cursor: "pointer",
+        });
+        lnk.onclick = function () {
+            openInspector(object);
+        };
+        return lnk;
     }
 
     // Methods
@@ -583,7 +601,7 @@ var inquirer = inquirer || new function () {
      * @param {*} object Any object to inspect
      */
     function openInspector(object) {
-        var wid, win, wwidth = 600, wheight = 500, panel;
+        var wid, win, wwidth = 350, wheight = 400, panel;
         wid = "inspector_" + uuid();
         win = merger.ui.window(wid, {
             title: "Inspector",
@@ -679,7 +697,7 @@ var inquirer = inquirer || new function () {
                 onLoad: function () {
                 },
                 onAbout: function () {
-                    merger.dialogs.messageBox(this, "Inquirer v" + VERSION + " ©2016-2017 XWolf Override.<br>Debugger application layer for web pages. Useful for embedded browser debugging", "About Inquirer", null, this.icon, 100);
+                    merger.dialogs.messageBox(this, "Inquirer v" + VERSION + " over Merger UI " + merger.version + " ©2016-2018 XWolf Override.<br>Debugger application layer for web pages. Useful for embedded browser debugging", "About Inquirer", null, this.icon, 100);
                 },
                 onFocus: function () {
                     removeIcon();
