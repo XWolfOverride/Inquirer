@@ -29,6 +29,7 @@ var inquirer = inquirer || new function () {
         config = {
             color: {
                 normal: "#000",
+                gray: "#777",
                 string: "#0A0",
                 number: "#00B",
                 keyword: "#809",
@@ -51,32 +52,6 @@ var inquirer = inquirer || new function () {
         });
     }
 
-    function objectResumeLink(obj) {
-        var a = document.createElement("a"), isError;
-        a.href = "#";
-        if (obj instanceof Error) {
-            a.appendChild(document.createTextNode(obj));
-            isError = true;
-        }
-        else if (obj instanceof BasicError) {
-            a.appendChild(document.createTextNode(obj.message));
-            isError = true;
-        } else
-            a.appendChild(document.createTextNode(objectResumeText(obj)));
-        a.style.merge({
-            color: "black",
-            textDecoration: "none"
-        });
-        a.onclick = function () {
-            if (isError)
-                getApp().showError(obj);
-            else
-                inq.inspect(obj);
-            return false;
-        }
-        return a;
-    }
-
     /** A formatter tool for console output */
     function formatter(rtd) {
         var r, p, rtp, i;
@@ -92,7 +67,16 @@ var inquirer = inquirer || new function () {
                 p.data = rtp;
                 if (rtp.c)
                     p.style.color = rtp.c;
+                if (rtp.s)
+                    p.style.fontSize = rtp.s;
                 p.innerText = rtp.v;
+                if (rtp.onclick) {
+                    p.onclick = rtp.onclick;
+                    p.style.textDecoration = "underline";
+                    p.style.cursor = "pointer";
+                }
+                if (rtp.tooltip)
+                    p.title = rtp.tooltip;
                 r.appendChild(p);
             }
         }
@@ -101,12 +85,14 @@ var inquirer = inquirer || new function () {
 
     /** expandable object resume */
     function compactObject(m, d) {
-        var r, f, mn, dn;
+        var r, f, mn, dn, s;
         r = document.createElement("span");
         f = document.createElement("span");
+        f.innerHTML = "<svg height='10' width='10' style='vertical-align:middle'><circle cx='5' cy='5' r='4' stroke='black' stroke-width='1.1' fill='white' /><polygon points='4,3 6.5,5 4,7' fill='black' /></svg>";
+        s = f.firstChild;
         mn = formatter(m);
         function open() {
-            f.innerText = "▼ ";
+            s.setAttribute("transform", "rotate(90)")
             if (r.contains(mn))
                 r.removeChild(mn);
             if (dn == null) {
@@ -119,7 +105,7 @@ var inquirer = inquirer || new function () {
             return r;
         }
         function close() {
-            f.innerText = "▶︎ ";
+            s.setAttribute("transform", "rotate(0)");
             if (r.contains(dn))
                 r.removeChild(dn);
             r.appendChild(mn);
@@ -130,6 +116,9 @@ var inquirer = inquirer || new function () {
         r.appendChild(f);
         r.close = close;
         r.open = open;
+        r.onmousedown = function () {
+            s.setAttribute("transform", "rotate(45)");
+        }
         close();
         return r;
     }
@@ -151,16 +140,19 @@ var inquirer = inquirer || new function () {
     function objectResume(obj) {
         var r = [], k, max = 10, first = true;
         if (Array.isArray(obj)) {
-            r.push({ c: config.color.normal, v: "Array (" + obj.length + ")" });
-            r.push(inspectorLink(obj));
+            r.push({ c: config.color.normal, v: "[" });
+            r.push({ c: config.color.gray, s: "8px", v: obj.length });
+            r.push({ c: config.color.normal, v: "]" });
         } else {
-            if (obj.constructor)
-                r.push({ c: config.color.normal, v: functionName(obj.constructor) + " " });
-            r.push(inspectorLink(obj));
+            if (obj.constructor) {
+                var oname = functionName(obj.constructor);
+                if (oname && oname.toLowerCase() != "object")
+                    r.push({ c: config.color.normal, v: functionName(obj.constructor) });
+            }
             r.push({ c: config.color.normal, v: "{" });
             for (k in obj) {
                 if (max-- <= 0) {
-                    r.push({ c: config.color.normal, v: "..." });
+                    r.push({ c: config.color.normal, v: "…" });
                     break;
                 }
                 if (first)
@@ -179,19 +171,21 @@ var inquirer = inquirer || new function () {
         return function () {
             var r = [], k, d;
             if (Array.isArray(obj)) {
-                r.push({ c: config.color.normal, v: "Array (" + obj.length + ")" });
-                r.push(inspectorLink(obj));
                 r.push({ c: config.color.normal, v: "[" });
+                r.push({ c: config.color.gray, s: "8px", v: obj.length });
             } else {
-                if (obj.constructor)
-                    r.push({ c: config.color.normal, v: functionName(obj.constructor) + " " });
-                r.push(inspectorLink(obj));
+                if (obj.constructor) {
+                    var oname = functionName(obj.constructor);
+                    if (oname && oname.toLowerCase() != "object")
+                        r.push({ c: config.color.normal, v: functionName(obj.constructor) });
+                }
                 r.push({ c: config.color.normal, v: "{" });
             }
             for (k in obj) {
                 r.push(d = document.createElement("div"));
                 d.appendChild(formatter([
                     { c: config.color.keyword, v: k },
+                    inspectorLink(obj[k]),
                     { c: config.color.normal, v: ": " },
                     objectRow(obj[k])
                 ]))
@@ -231,7 +225,7 @@ var inquirer = inquirer || new function () {
                     row.appendChild(formatter([
                         { c: config.color.normal, v: '"' },
                         { c: config.color.string, v: obj.substr(0, 512) },
-                        { c: config.color.normal, v: '..."' },
+                        { c: config.color.normal, v: '…"' },
                     ]))
                 else
                     row.appendChild(formatter([
@@ -249,7 +243,7 @@ var inquirer = inquirer || new function () {
                 row.appendChild(robj = compactObject([
                     { c: config.color.keyword, v: "function" },
                     obj.name ? { c: config.color.normal, v: " " + functionName(obj) } : null,
-                    { c: config.color.normal, v: "() {...}" },
+                    { c: config.color.normal, v: "() {…}" },
                 ],
                     functionDetails(obj)
                 ));
@@ -261,17 +255,27 @@ var inquirer = inquirer || new function () {
                 row.innerText = obj;
                 break;
         }
-        if (expanded)
+        if (robj && expanded)
             robj.open();
         return row;
     }
 
     function inspectorLink(object) {
+        return {
+            c: config.color.normal,
+            v: "※",//○※
+            onclick: function () {
+                openInspector(object);
+            },
+            tooltip: "Show on variable inspector"
+        }
         var lnk = document.createElement("IMG");
         lnk.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABBElEQVQ4T6XTvyvFURjH8delGJTJoMRA+bGIjDax2cxS18Km5B+wyGJQDP4C/gKlsCgTBgMSokh2g0U6Om7H1/1+u9c96/k87/N5Ps9zSho8pQbr5QE6MIon3OIz76EsoBVrWKICP8Us7qpBsoANzGMFx+jBOtqjo/csJAUE229YwE4i7MQDlrFdBJjCAfpj36n2HBfR3S9G6mAA15jEYaJqxgu2sFrkoAknaME0XhGKN1HGCG6KAOGuD/voxhW6YoAhvEVcRpcVTrU9aMMcxvCIPQxjN4Y8EeHfkFo3cTCONUwktDaO+3oAQTuEI5xhBh/1AoK+F88/xf8B/NnmWjPI/bRf61ssEdnALW4AAAAASUVORK5CYII=";
         lnk.style.merge({
             verticalAlign: "middle",
             cursor: "pointer",
+            width: "8px",
+            height: "8px"
         });
         lnk.onclick = function () {
             openInspector(object);
@@ -336,16 +340,15 @@ var inquirer = inquirer || new function () {
                 ],
                 onClose: function () {
                     this.hide();
-                    //getApp().removeWindow(win);
                 },
-                load: function () {
-                    win.content.Lerror.setText(eMessage);
-                    win.content.Tinfo.setText(eData);
+                load: function (msg, data) {
+                    win.content.Lerror.setText(msg);
+                    win.content.Tinfo.setText(data);
                 }
             });
             getApp().addWindow(win);
         }
-        win.load();
+        win.load(eMessage, eData);
         win.show();
         return win;
     }
@@ -488,6 +491,10 @@ var inquirer = inquirer || new function () {
                         case 'e':
                             d.appendChild(objectRow(object));
                             head.appendChild(document.createTextNode("!"));
+                            head.style.cursonr = "pointer";
+                            head.onclick = function () {
+                                getApp().showError(object);
+                            }
                             head.style.color = "#F88";
                             d.style.background = "#FEE";
                             head.style.background = "#FEE";
@@ -617,6 +624,8 @@ var inquirer = inquirer || new function () {
                     anchor: "TBRL",
                     style: {
                         overflow: "scroll",
+                        fontFamily: "Lucida Console, Monospace",
+                        border: "0",
                     },
                 }),
                 merger.ui.button("insp_close", {
@@ -640,6 +649,8 @@ var inquirer = inquirer || new function () {
         getApp().addWindow(win);
         win.load();
         win.show();
+        win.setTop(win.top + ((Math.random() * 60) - 30));
+        win.setLeft(win.left + ((Math.random() * 60) - 30));
         return win;
     }
 
