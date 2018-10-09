@@ -185,7 +185,7 @@ var inquirer = inquirer || new function () {
             for (k in obj) {
                 r.push(d = document.createElement("div"));
                 d.appendChild(formatter([
-                    { c: config.color.keyword, v: k },
+                    { c: config.color.keyword, v: k + " " },
                     inspectorLink(obj[k]),
                     { c: config.color.normal, v: ": " },
                     objectRow(obj[k])
@@ -273,6 +273,40 @@ var inquirer = inquirer || new function () {
             },
             tooltip: "Show on variable inspector"
         }
+    }
+
+    function objectTable(obj) {
+        var i, cname, colmap = {}, tbl = document.createElement("table"), tr, td;
+        // Discover columns
+        tr = document.createElement("tr");
+        td = document.createElement("th");
+        td.innerText = "#";
+        tr.appendChild(td);
+        for (i in obj) {
+            var row = obj[i];
+            for (cname in row)
+                if (!colmap[cname]) {
+                    var col = colmap[cname] = document.createElement("th");
+                    col.innerText = cname;
+                    tr.appendChild(col);
+                }
+        }
+        tbl.appendChild(tr);
+        // Fill data
+        for (i in obj) {
+            var row = obj[i];
+            tr = document.createElement("tr");
+            for (cname in colmap) {
+                td = document.createElement("td");
+                if (row[cname] !== undefined) {
+                    td.innerText = row[cname];
+                }
+                tr.appendChild(td);
+            }
+            tbl.appendChild(tr);
+        }
+
+        return tbl;
     }
 
     // Methods
@@ -371,6 +405,7 @@ var inquirer = inquirer || new function () {
                         anchor: "TRBL",
                         style: {
                             overflow: "scroll",
+                            userSelect: "text"
                         },
                     }),
                     merger.ui.textbox("Tinput", {
@@ -618,6 +653,7 @@ var inquirer = inquirer || new function () {
                         overflow: "scroll",
                         fontFamily: "Lucida Console, Monospace",
                         border: "0",
+                        userSelect: "text"
                     },
                 }),
                 merger.ui.button("insp_close", {
@@ -630,8 +666,32 @@ var inquirer = inquirer || new function () {
                     }
                 }),
             ],
-            load: function () {
-                panel.appendChild(objectRow(object, true, true));
+            frameTools: [
+                merger.ui.toggleButton("isp_asObject", {
+                    icon: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pjxzdmcgdmlld0JveD0iMCAwIDMyIDMyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0aXRsZS8+PGcgZGF0YS1uYW1lPSI0OC1PcHRpb24iIGlkPSJfNDgtT3B0aW9uIj48cGF0aCBkPSJNMjAsMzJIMmEyLDIsMCwwLDEtMi0yVjEyYTIsMiwwLDAsMSwyLTJIMjBhMiwyLDAsMCwxLDIsMlYzMEEyLDIsMCwwLDEsMjAsMzJaTTIsMTJWMzBIMjBWMTJaIi8+PHBhdGggZD0iTTMwLDIySDI1VjIwaDVWMkgxMlY3SDEwVjJhMiwyLDAsMCwxLDItMkgzMGEyLDIsMCwwLDEsMiwyVjIwQTIsMiwwLDAsMSwzMCwyMloiLz48L2c+PC9zdmc+",
+                    title: "Show as object",
+                    width: 30,
+                    selected: true,
+                    group: "mode",
+                    onClick: function () {
+                        this.getWindow() && this.getWindow().load(false);
+                    }
+                }), merger.ui.toggleButton("isp_asTable", {
+                    icon: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjxzdmcgaGVpZ2h0PSIxNzkyIiB2aWV3Qm94PSIwIDAgMTc5MiAxNzkyIiB3aWR0aD0iMTc5MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNTc2IDEzNzZ2LTE5MnEwLTE0LTktMjN0LTIzLTloLTMyMHEtMTQgMC0yMyA5dC05IDIzdjE5MnEwIDE0IDkgMjN0MjMgOWgzMjBxMTQgMCAyMy05dDktMjN6bTAtMzg0di0xOTJxMC0xNC05LTIzdC0yMy05aC0zMjBxLTE0IDAtMjMgOXQtOSAyM3YxOTJxMCAxNCA5IDIzdDIzIDloMzIwcTE0IDAgMjMtOXQ5LTIzem01MTIgMzg0di0xOTJxMC0xNC05LTIzdC0yMy05aC0zMjBxLTE0IDAtMjMgOXQtOSAyM3YxOTJxMCAxNCA5IDIzdDIzIDloMzIwcTE0IDAgMjMtOXQ5LTIzem0tNTEyLTc2OHYtMTkycTAtMTQtOS0yM3QtMjMtOWgtMzIwcS0xNCAwLTIzIDl0LTkgMjN2MTkycTAgMTQgOSAyM3QyMyA5aDMyMHExNCAwIDIzLTl0OS0yM3ptNTEyIDM4NHYtMTkycTAtMTQtOS0yM3QtMjMtOWgtMzIwcS0xNCAwLTIzIDl0LTkgMjN2MTkycTAgMTQgOSAyM3QyMyA5aDMyMHExNCAwIDIzLTl0OS0yM3ptNTEyIDM4NHYtMTkycTAtMTQtOS0yM3QtMjMtOWgtMzIwcS0xNCAwLTIzIDl0LTkgMjN2MTkycTAgMTQgOSAyM3QyMyA5aDMyMHExNCAwIDIzLTl0OS0yM3ptLTUxMi03Njh2LTE5MnEwLTE0LTktMjN0LTIzLTloLTMyMHEtMTQgMC0yMyA5dC05IDIzdjE5MnEwIDE0IDkgMjN0MjMgOWgzMjBxMTQgMCAyMy05dDktMjN6bTUxMiAzODR2LTE5MnEwLTE0LTktMjN0LTIzLTloLTMyMHEtMTQgMC0yMyA5dC05IDIzdjE5MnEwIDE0IDkgMjN0MjMgOWgzMjBxMTQgMCAyMy05dDktMjN6bTAtMzg0di0xOTJxMC0xNC05LTIzdC0yMy05aC0zMjBxLTE0IDAtMjMgOXQtOSAyM3YxOTJxMCAxNCA5IDIzdDIzIDloMzIwcTE0IDAgMjMtOXQ5LTIzem0xMjgtMzIwdjEwODhxMCA2Ni00NyAxMTN0LTExMyA0N2gtMTM0NHEtNjYgMC0xMTMtNDd0LTQ3LTExM3YtMTA4OHEwLTY2IDQ3LTExM3QxMTMtNDdoMTM0NHE2NiAwIDExMyA0N3Q0NyAxMTN6Ii8+PC9zdmc+",
+                    title: "Show as table",
+                    width: 30,
+                    group: "mode",
+                    onClick: function () {
+                        this.getWindow().load(true);
+                    }
+                })
+            ],
+            load: function (asTable) {
+                panel.innerHTML = "";
+                if (asTable)
+                    panel.appendChild(objectTable(object));
+                else
+                    panel.appendChild(objectRow(object, true, true));
             },
             onClose: function () {
                 this.hide();
