@@ -125,6 +125,27 @@
                     }
                 }),
                 ],
+                frameTools: [
+                    merger.ui.toggleButton("sample_frame_tbuttonG1", {
+                        width: 60,
+                        height: 20,
+                        text: "Frame A",
+                        selected: true,
+                        group: "TL"
+                    }),
+                    merger.ui.toggleButton("sample_frame_tbuttonG2", {
+                        width: 60,
+                        height: 20,
+                        text: "Frame B",
+                        group: "TL"
+                    }),
+                    merger.ui.dropdown("sample_frame_dropdown", {
+                        top: 95,
+                        left: 0,
+                        width: 70,
+                        items: [{ key: "ma", value: "Mode A" }, { key: "mb", value: "Mode B" }, { key: "mc", value: "Mode C" }],
+                    }),
+                ],
                 onClose: function () {
                     this.hide();
                     //merger.leave();

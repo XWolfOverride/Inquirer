@@ -809,6 +809,8 @@ var merger = new function () {
         c.merge(core.mkDefinition({
             style: {
                 position: "absolute",
+                userSelect: "none",
+                outline: "0",
             },
             anchor: "TL",
             bringToFront: function () {
@@ -990,13 +992,26 @@ var merger = new function () {
             def.left = document.body ? (document.body.clientWidth - def.width) / 2 : undefined;
         if (!def.content)
             def.content = [];
-        var w, dw = def.width, dh = def.height;
+        var w, dw = def.width, dh = def.height, ft;
         delete (def.width);
         delete (def.height);
         if (dw == undefined)
             dw = 300;
         if (dh == undefined)
             dh = 200;
+        // Frame controls
+        if (def.frameTools) {
+            var fx = 30;
+            ft = def.frameTools;
+            for (var i in ft) {
+                var fc = ft[i];
+                fc.anchor = "TL";
+                fc.setTop(1);
+                fc.setLeft(fx);
+                fc.setHeight(18);
+                fx += fc._width + 1;
+            }
+        } else ft = [];
         // Window Title
         var wt = control("titlebar", "windowtitle", {
             visible: !def.hideTitle,
@@ -1036,7 +1051,7 @@ var merger = new function () {
                     },
                     text: "X",
                 }, document.createElement("button"))
-            ],
+            ].concat(ft),
             setTitle: function (title) {
                 if (!this._textNode) {
                     this._textNode = document.createTextNode("");
@@ -1045,11 +1060,15 @@ var merger = new function () {
                 this._textNode.textContent = title;
             },
             onmousedown: function (e) {
+                if (e.srcElement != wt)
+                    return;
                 if (e.offsetY < 1)
                     return;
                 DragNDrop.drag(this.parentControl, e.offsetX, e.offsetY);
             },
             onmouseup: function (e) {
+                if (e.srcElement != wt)
+                    return;
                 DragNDrop.drop(this.parentControl);
             }
         });
@@ -1191,6 +1210,9 @@ var merger = new function () {
 	 */
     function label(id, def) {
         var c = control("label", id, core.mkDefinition({
+            style: {
+                userSelect: "text",
+            },
             setText: function (text) {
                 this.innerText = text;
             }
@@ -1262,7 +1284,7 @@ var merger = new function () {
             },
             style: {
                 border: "0",
-                borderRadius: "7px",
+                borderRadius: "3px",
                 background: sys.color.frame,
                 color: sys.color.framecontrast,
                 height: "20px",
@@ -1304,7 +1326,7 @@ var merger = new function () {
             },
             style: {
                 border: "0",
-                borderRadius: "7px",
+                borderRadius: "3px",
                 background: sys.color.frame,
                 color: sys.color.framecontrast,
                 height: "20px",
@@ -1328,7 +1350,7 @@ var merger = new function () {
                 })
             },
             getGroupButtons: function () {
-                var group = [], bros = this.getWindow().content, i;
+                var group = [], bros = (this.parentControl || {}).content, i;
                 for (i in bros) {
                     var b = bros[i];
                     if (b._type == "toggleButton" && b.group == this.group)
@@ -1356,6 +1378,8 @@ var merger = new function () {
             if (this.onClick)
                 this.onClick.apply(this, arguments)
         }, false);
+        if (def.selected)
+            c.click();
         return c;
     }
 
