@@ -1214,8 +1214,12 @@ var merger = new function () {
                 userSelect: "text",
             },
             setText: function (text) {
-                this.innerText = text;
-            }
+                if (!this.textElement) {
+                    this.textElement = document.createElement("bdi");
+                    this.appendChild(this.textElement);
+                }
+                this.textElement.innerText = text;
+            },
         }, def));
         if (def.text !== undefined)
             c.setText(def.text);
@@ -1280,7 +1284,11 @@ var merger = new function () {
     function button(id, def) {
         var c = control("button", id, core.mkDefinition({
             setText: function (text) {
-                this.innerText = text;
+                if (!this.textElement) {
+                    this.textElement = document.createElement("bdi");
+                    this.appendChild(this.textElement);
+                }
+                this.textElement.innerText = text;
             },
             style: {
                 border: "0",
@@ -1307,8 +1315,21 @@ var merger = new function () {
                     color: sys.color.framecontrast,
                 })
             },
+            setIcon: function (icon) {
+                if (!this.iconElement) {
+                    this.iconElement = document.createElement("img");
+                    this.iconElement.style.height = "100%";
+                    this.iconElement.style.merge({
+                        verticalAlign: "middle",
+                        marginRight:"2px",
+                    })
+                    this.appendChild(this.iconElement);
+                }
+                this.iconElement.src = icon;
+            },
         }, def), core.mkTag("button"));
-        c.setText(def.text);
+        if (def.text)
+            c.setText(def.text);
         c.addEventListener("click", function () {
             if (this.onClick)
                 this.onClick.apply(this, arguments)
@@ -1322,7 +1343,11 @@ var merger = new function () {
     function toggleButton(id, def) {
         var c = control("toggleButton", id, core.mkDefinition({
             setText: function (text) {
-                this.innerText = text;
+                if (!this.textElement) {
+                    this.textElement = document.createElement("bdi");
+                    this.appendChild(this.textElement);
+                }
+                this.textElement.innerText = text;
             },
             style: {
                 border: "0",
@@ -1349,6 +1374,18 @@ var merger = new function () {
                     color: sys.color.framecontrast,
                 })
             },
+            setIcon: function (icon) {
+                if (!this.iconElement) {
+                    this.iconElement = document.createElement("img");
+                    this.iconElement.style.height = "100%";
+                    this.iconElement.style.merge({
+                        verticalAlign: "middle",
+                        marginRight:"2px",
+                    })
+                    this.appendChild(this.iconElement);
+                }
+                this.iconElement.src = icon;
+            },
             getGroupButtons: function () {
                 var group = [], bros = (this.parentControl || {}).content, i;
                 for (i in bros) {
@@ -1359,7 +1396,8 @@ var merger = new function () {
                 return group;
             }
         }, def), core.mkTag("button"));
-        c.setText(def.text);
+        if (def.text)
+            c.setText(def.text);
         c.addEventListener("click", function () {
             if (this.group) {
                 var grp = this.getGroupButtons(), tb;
