@@ -137,9 +137,11 @@ var inquirer = inquirer || new function () {
         return r;
     }
 
-    /** formatice object resume */
-    function objectResume(obj) {
-        var r = [], k, max = 10, first = true;
+    /** formatice object resume (basic mode) */
+    function objectResume(obj, max) {
+        var r = [], k, first = true;
+        if (max === undefined)
+            max = 10;
         if (Array.isArray(obj)) {
             r.push({ c: config.color.normal, v: "[" });
             r.push({ c: config.color.gray, s: "8px", v: obj.length });
@@ -186,7 +188,6 @@ var inquirer = inquirer || new function () {
                 r.push(d = document.createElement("div"));
                 d.appendChild(formatter([
                     { c: config.color.keyword, v: k + " " },
-                    inspectorLink(obj[k]),
                     { c: config.color.normal, v: ": " },
                     objectRow(obj[k])
                 ]))
@@ -219,45 +220,48 @@ var inquirer = inquirer || new function () {
         var row, robj;
         row = document.createElement("span");
         if (obj === null)
-            row.innerText = "<null>";
+            row.appendChild(formatter([{ c: config.color.gray, v: "<null>" }]));
         else if (obj === undefined)
-            row.innerText = "<undefined>";
-        else switch (typeof obj) {
-            case "string":
-                if (!full && obj.length > 512)
+            row.appendChild(formatter([{ c: config.color.gray, v: "<undefined>" }]));
+        else {
+            row.appendChild(formatter([inspectorLink(obj)]));
+            switch (typeof obj) {
+                case "string":
+                    if (!full && obj.length > 512)
+                        row.appendChild(formatter([
+                            { c: config.color.normal, v: '"' },
+                            { c: config.color.string, v: obj.substr(0, 512) },
+                            { c: config.color.normal, v: '…', onclick: function () { openInspector(obj); } },
+                            { c: config.color.normal, v: '"' },
+                        ]))
+                    else
+                        row.appendChild(formatter([
+                            { c: config.color.normal, v: '"' },
+                            { c: config.color.string, v: obj },
+                            { c: config.color.normal, v: '"' },
+                        ]))
+                    break;
+                case "number":
                     row.appendChild(formatter([
-                        { c: config.color.normal, v: '"' },
-                        { c: config.color.string, v: obj.substr(0, 512) },
-                        { c: config.color.normal, v: '…', onclick: function () { openInspector(obj); } },
-                        { c: config.color.normal, v: '"' },
-                    ]))
-                else
-                    row.appendChild(formatter([
-                        { c: config.color.normal, v: '"' },
-                        { c: config.color.string, v: obj },
-                        { c: config.color.normal, v: '"' },
-                    ]))
-                break;
-            case "number":
-                row.appendChild(formatter([
-                    { c: config.color.number, v: obj },
-                ]));
-                break;
-            case "function":
-                row.appendChild(robj = compactObject([
-                    { c: config.color.keyword, v: "function" },
-                    obj.name ? { c: config.color.normal, v: " " + functionName(obj) } : null,
-                    { c: config.color.normal, v: "() {…}" },
-                ],
-                    functionDetails(obj)
-                ));
-                break;
-            case "object":
-                row.appendChild(robj = compactObject(objectResume(obj), objectDetails(obj)));
-                break;
-            default:
-                row.innerText = obj;
-                break;
+                        { c: config.color.number, v: obj },
+                    ]));
+                    break;
+                case "function":
+                    row.appendChild(robj = compactObject([
+                        { c: config.color.keyword, v: "function" },
+                        obj.name ? { c: config.color.normal, v: " " + functionName(obj) } : null,
+                        { c: config.color.normal, v: "() {…}" },
+                    ],
+                        functionDetails(obj)
+                    ));
+                    break;
+                case "object":
+                    row.appendChild(robj = compactObject(objectResume(obj, full == -1 ? 0 : 10), objectDetails(obj)));
+                    break;
+                default:
+                    row.innerText = obj;
+                    break;
+            }
         }
         if (robj && expanded)
             robj.open();
@@ -276,34 +280,93 @@ var inquirer = inquirer || new function () {
     }
 
     function objectTable(obj) {
-        var i, cname, colmap = {}, tbl = document.createElement("table"), tr, td;
+        var i, cname, colmap = {}, tbl, tr, td, vth, rown, sl;
+        function mkElement(type, style) {
+            var el = document.createElement(type);
+            el.style.merge(style);
+            return el;
+        }
+        function isValue(val) {
+            if (!val)
+                return true;
+            switch (typeof val) {
+                case "function":
+                case "object":
+                    return Array.isArray(val);
+            }
+            return true;
+        }
+        function mkTd(value, empty) {
+            td = mkElement("td", { fontSize: "10px", borderLeft: "1px solid #EEE", whiteSpace: "nowrap" });
+            if (!empty)
+                td.appendChild(objectRow(value, -1, false));
+            tr.appendChild(td);
+        }
+        tbl = mkElement("table", { emptyCells: "hide", borderCollapse: "collapse" });
         // Discover columns
-        tr = document.createElement("tr");
-        td = document.createElement("th");
-        td.innerText = "#";
+        tr = mkElement("tr");
+        td = mkElement("th", { fontSize: "10px", fontWeight: "bold", color: "gray" });
         tr.appendChild(td);
         for (i in obj) {
             var row = obj[i];
-            for (cname in row)
+            if (isValue(row)) {
+                if (!vth) {
+                    vth = mkElement("th", { fontSize: "10px", background: "#CEC" });
+                    vth.innerText = "#";
+                    if (tr.firstChild.nextSibling)
+                        tr.insertBefore(vth, tr.firstChild.nextSibling);
+                    else
+                        tr.appendChild(vth);
+                }
+            } else for (cname in row)
                 if (!colmap[cname]) {
-                    var col = colmap[cname] = document.createElement("th");
+                    var col = colmap[cname] = mkElement("th", { fontSize: "10px", background: "#CEC" });
                     col.innerText = cname;
                     tr.appendChild(col);
                 }
         }
         tbl.appendChild(tr);
         // Fill data
+        rown = 1;
         for (i in obj) {
             var row = obj[i];
-            tr = document.createElement("tr");
-            for (cname in colmap) {
-                td = document.createElement("td");
-                if (row[cname] !== undefined) {
-                    td.innerText = row[cname];
+            tr = mkElement("tr");
+            tr.addEventListener("click", function () {
+                if (!this.bbgg)
+                    this.bbgg = this.style.background;
+                this.style.background = "#DDF";
+                sl = this;
+            });
+            tr.addEventListener("mouseover", function () {
+                if (!this.bbgg)
+                    this.bbgg = this.style.background;
+                this.style.background = "#EEF";
+            });
+            tr.addEventListener("mouseleave", function () {
+                if (sl == this)
+                    this.style.background = "#DDF";
+                else
+                    this.style.background = this.bbgg;
+            });
+            tr.style.background = rown == 0 ? "#F8F8F8" : "#FFF";
+            td = mkElement("td", { fontSize: "10px", background: "rgba(0,0,0,0.05)", whiteSpace: "nowrap" });
+            td.appendChild(formatter([inspectorLink(row), { v: i }]));
+            tr.appendChild(td);
+            if (vth) {
+                if (isValue(row)) {
+                    mkTd(row);
+                    for (cname in colmap)
+                        mkTd(null, true);
+                } else {
+                    mkTd(null, true);
+                    for (cname in colmap)
+                        mkTd(row[cname]);
                 }
-                tr.appendChild(td);
-            }
+            } else
+                for (cname in colmap)
+                    mkTd(row[cname]);
             tbl.appendChild(tr);
+            rown = (rown + 1) % 2;
         }
 
         return tbl;
@@ -423,6 +486,7 @@ var inquirer = inquirer || new function () {
                             overflow: "scroll",
                             background: "#EEE",
                             padding: "3px",
+                            boxSizing: "border-box",
                         },
                         onkeydown: function (e) {
                             var t, stop;
