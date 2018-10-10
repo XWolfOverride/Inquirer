@@ -332,6 +332,8 @@ var inquirer = inquirer || new function () {
             var row = obj[i];
             tr = mkElement("tr");
             tr.addEventListener("click", function () {
+                if (sl)
+                    sl.style.background = sl.bbgg;
                 if (!this.bbgg)
                     this.bbgg = this.style.background;
                 this.style.background = "#DDF";
